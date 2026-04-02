@@ -53,7 +53,7 @@ public class WebFetchTool extends Tool {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
                     .timeout(Duration.ofSeconds(30))
-                    .header("User-Agent", "Mozilla/5.0 (compatible; JClaw/1.0; +https://github.com/openclaw/jcode)")
+                    .header("User-Agent", "Mozilla/5.0 (compatible; JClaw/1.0; +https://github.com/openclaw/jclaw)")
                     .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
                     .GET()
                     .build();
@@ -242,7 +242,7 @@ public class WebFetchTool extends Tool {
                
                示例:
                  web_fetch url="https://example.com"
-                 web_fetch url="https://github.com/openclaw/jcode" prompt="项目介绍"
+                 web_fetch url="https://github.com/openclaw/jclaw" prompt="项目介绍"
                """.formatted(name, description);
     }
 }

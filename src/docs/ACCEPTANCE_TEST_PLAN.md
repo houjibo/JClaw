@@ -45,7 +45,7 @@
 ### 验收命令
 
 ```bash
-cd /Users/houjibo/.openclaw/workspace/projects/code/core/jcode
+cd /Users/houjibo/.openclaw/workspace/projects/code/core/jclaw
 mvn clean compile
 ```
 
@@ -125,7 +125,7 @@ curl http://localhost:8080/api/features
 
 | 检查项 | 标准 | 测试方法 | 状态 |
 |--------|------|----------|------|
-| 启动终端 | 正常启动 | `java -jar jcode.jar` | ⏳ |
+| 启动终端 | 正常启动 | `java -jar jclaw.jar` | ⏳ |
 | 命令历史 | 上下箭头可用 | 手动测试 | ⏳ |
 | Tab 补全 | 自动补全 | 手动测试 | ⏳ |
 | 语法高亮 | 颜色正常 | 手动测试 | ⏳ |
@@ -247,7 +247,7 @@ time mvn spring-boot:run
 ab -n 1000 -c 10 http://localhost:8080/api/health
 
 # 内存占用
-jps -lvm | grep jcode
+jps -lvm | grep jclaw
 ```
 
 ---

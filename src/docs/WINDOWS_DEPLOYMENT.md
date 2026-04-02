@@ -10,7 +10,7 @@
 
 | 文件 | 大小 | 说明 |
 |------|------|------|
-| `jcode-1.0.0-SNAPSHOT.jar` | 38MB | 主程序 |
+| `jclaw-1.0.0-SNAPSHOT.jar` | 38MB | 主程序 |
 | `src/main/resources/application.yml` | - | 配置文件 |
 | `README.md` | - | 项目说明 |
 
@@ -51,10 +51,10 @@ openjdk version "21.x.x"
 
 ```powershell
 # 进入项目目录
-cd jcode
+cd jclaw
 
 # 运行
-java -jar target/jcode-1.0.0-SNAPSHOT.jar
+java -jar target/jclaw-1.0.0-SNAPSHOT.jar
 ```
 
 ### 3. 验证启动
@@ -82,7 +82,7 @@ Started JClawApplication in 0.865 seconds
 ### 配置文件位置
 
 ```
-用户目录/.openclaw/jcode/application.yml
+用户目录/.openclaw/jclaw/application.yml
 ```
 
 ### 常用配置
@@ -93,7 +93,7 @@ server:
   port: 8080
 
 # JClaw 配置
-jcode:
+jclaw:
   workspace: ${user.home}/.openclaw/workspace
   max-read-size: 10485760  # 10MB
   allow-write: true
@@ -195,7 +195,7 @@ server:
 
 **解决：** 增加堆内存
 ```powershell
-java -Xmx512m -jar target/jcode-1.0.0-SNAPSHOT.jar
+java -Xmx512m -jar target/jclaw-1.0.0-SNAPSHOT.jar
 ```
 
 ### 4. 权限问题（文件操作）
@@ -263,7 +263,7 @@ curl -X POST http://localhost:8080/api/agents/tasks/{taskId}/assign ^
 
 ## 📞 技术支持
 
-**项目地址：** `~/.openclaw/workspace/projects/code/core/jcode/`
+**项目地址：** `~/.openclaw/workspace/projects/code/core/jclaw/`
 
 **文档位置：**
 - `README.md` - 项目说明

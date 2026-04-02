@@ -144,9 +144,9 @@ public class InitCommand extends Command {
             
             ### 创建的文件
             
-            - `.jcode/config.yml` - 主配置
-            - `.jcode/tools.yml` - 工具配置
-            - `.jcode/commands.yml` - 命令配置
+            - `.jclaw/config.yml` - 主配置
+            - `.jclaw/tools.yml` - 工具配置
+            - `.jclaw/commands.yml` - 命令配置
             
             ### 默认配置
             

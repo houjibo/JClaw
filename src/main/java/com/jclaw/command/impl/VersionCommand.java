@@ -63,7 +63,7 @@ public class VersionCommand extends Command {
             
             ### 链接
             
-            - 仓库：github.com/houjibo/jcode
+            - 仓库：github.com/houjibo/JClaw
             - 文档：待发布
             - 问题：待发布
             

@@ -28,7 +28,7 @@ import java.util.concurrent.Callable;
  */
 @Component
 @CommandLine.Command(
-    name = "jcode",
+    name = "jclaw",
     version = "1.0.0",
     description = "JClaw - Java 编码智能体",
     mixinStandardHelpOptions = true,
@@ -96,7 +96,7 @@ public class TerminalUI implements Callable<Integer> {
             .terminal(terminal)
             .completer(new PicocliJLineCompleter(commandLine.getCommandSpec()))
             .parser(LineReaderBuilder.builder().build().getParser())
-            .variable(LineReader.HISTORY_FILE, Paths.get(".jcode-history"))
+            .variable(LineReader.HISTORY_FILE, Paths.get(".jclaw-history"))
             .variable(LineReader.SECONDARY_PROMPT_PATTERN, "%M%P > ")
             .variable(LineReader.INDENTATION, 2)
             .option(LineReader.Option.COMPLETE_IN_WORD, true)

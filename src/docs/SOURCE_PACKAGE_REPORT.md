@@ -10,11 +10,11 @@
 
 | 项目 | 详情 |
 |------|------|
-| **文件名** | jcode-for-windows.zip |
+| **文件名** | jclaw-for-windows.zip |
 | **文件大小** | ~73MB (压缩后) |
 | **源码大小** | ~1.6MB (不含编译产物) |
-| **文件位置** | `/Users/houjibo/.openclaw/workspace/projects/code/core/jcode-for-windows.zip` |
-| **临时路径** | `/tmp/jcode-for-windows.zip` |
+| **文件位置** | `/Users/houjibo/.openclaw/workspace/projects/code/core/jclaw-for-windows.zip` |
+| **临时路径** | `/tmp/jclaw-for-windows.zip` |
 
 ---
 
@@ -22,7 +22,7 @@
 
 ### 源代码
 - ✅ `src/main/java/` - 主源代码 (~1.6MB)
-  - `com/openclaw/jcode/` - 核心代码
+  - `com/openclaw/jclaw/` - 核心代码
   - `ui/` - 终端 UI
   - `tools/` - 工具实现 (46个工具)
   - `command/impl/` - 命令实现 (78个命令)
@@ -69,7 +69,7 @@
 java -version
 
 # 3. 运行程序
-java -jar target/jcode-1.0.0-SNAPSHOT.jar
+java -jar target/jclaw-1.0.0-SNAPSHOT.jar
 
 # 4. 访问Swagger UI
 # http://localhost:8080/swagger-ui.html
@@ -79,7 +79,7 @@ java -jar target/jcode-1.0.0-SNAPSHOT.jar
 
 ```powershell
 # 1. 进入项目目录
-cd jcode
+cd jclaw
 
 # 2. 编译项目
 mvn clean compile
@@ -130,7 +130,7 @@ mvn spring-boot:run
 
 1. **本地复制**
    ```bash
-   cp /Users/houjibo/.openclaw/workspace/projects/code/core/jcode-for-windows.zip <目标位置>
+   cp /Users/houjibo/.openclaw/workspace/projects/code/core/jclaw-for-windows.zip <目标位置>
    ```
 
 2. **网络传输**

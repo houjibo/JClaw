@@ -30,9 +30,9 @@
 5. 改进建议
 
 代码：
-package com.openclaw.jcode.command;
+package com.jclaw.command;
 
-import com.openclaw.jcode.core.ToolContext;
+import com.jclaw.core.ToolContext;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -228,7 +228,7 @@ private String buildHelp() {
 ```
 请审查以下 Java 工具基类代码：
 
-package com.openclaw.jcode.core;
+package com.jclaw.core;
 
 import java.util.Map;
 
@@ -549,10 +549,10 @@ public CommandResult withData(String key, Object value) {
 export DEEPSEEK_API_KEY=sk-REDACTED
 
 # 审查 Command.java
-ai review "$(cat src/main/java/com/openclaw/jcode/command/Command.java)"
+ai review "$(cat src/main/java/com/openclaw/jclaw/command/Command.java)"
 
 # 审查 Tool.java
-ai review "$(cat src/main/java/com/openclaw/jcode/core/Tool.java)"
+ai review "$(cat src/main/java/com/openclaw/jclaw/core/Tool.java)"
 
 # 审查整个项目
 ai review "请审查 JClaw 项目的代码质量和架构设计"

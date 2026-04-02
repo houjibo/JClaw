@@ -21,7 +21,7 @@
 ### 新增文件（10 个）
 
 ```
-src/main/java/com/openclaw/jcode/
+src/main/java/com/openclaw/jclaw/
 ├── JClawLauncher.java                    # 启动器
 ├── ui/
 │   └── TerminalUI.java                   # 终端 UI
@@ -266,7 +266,7 @@ curl -X POST http://localhost:8080/api/agents/tasks/task-xxx/assign \
 ## 📝 编译验证
 
 ```bash
-cd /Users/houjibo/.openclaw/workspace/projects/code/core/jcode
+cd /Users/houjibo/.openclaw/workspace/projects/code/core/jclaw
 mvn clean compile
 ```
 

@@ -247,7 +247,7 @@ task_output task_id="task_1" lines=50
 
 ## 📍 项目位置
 
-`~/.openclaw/workspace/projects/code/core/jcode/`
+`~/.openclaw/workspace/projects/code/core/jclaw/`
 
 **运行中**: http://localhost:8081
 

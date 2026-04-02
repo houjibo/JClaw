@@ -25,7 +25,7 @@
 ## 1. files 命令验收（TC-P0-001 ~ 010）
 
 ### 测试环境
-- 工作目录：`/Users/houjibo/.openclaw/workspace/projects/code/core/jcode`
+- 工作目录：`/Users/houjibo/.openclaw/workspace/projects/code/core/jclaw`
 - 测试文件：临时创建
 
 ### 测试结果

@@ -188,7 +188,7 @@ void testInstallSkill() {
 ### 运行所有测试
 
 ```bash
-cd /Users/houjibo/.openclaw/workspace/projects/code/core/jcode
+cd /Users/houjibo/.openclaw/workspace/projects/code/core/jclaw
 mvn test
 ```
 

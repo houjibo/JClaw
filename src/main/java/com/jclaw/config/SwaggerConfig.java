@@ -18,7 +18,7 @@ import java.util.List;
 public class SwaggerConfig {
     
     @Bean
-    public OpenAPI jcodeOpenAPI() {
+    public OpenAPI jclawOpenAPI() {
         return new OpenAPI()
             .info(new Info()
                 .title("JClaw API")
@@ -26,8 +26,8 @@ public class SwaggerConfig {
                 .version("1.0.0")
                 .contact(new Contact()
                     .name("JClaw Team")
-                    .email("contact@jcode.ai")
-                    .url("https://github.com/openclaw/jcode")))
+                    .email("contact@jclaw.ai")
+                    .url("https://github.com/openclaw/jclaw")))
             .servers(List.of(
                 new Server()
                     .url("http://localhost:8080")

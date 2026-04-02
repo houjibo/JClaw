@@ -102,7 +102,7 @@ public class IdeCommand extends Command {
                 ### 方法 2: 命令行安装
                 
                 ```bash
-                code --install-extension jcode.jcode
+                code --install-extension jclaw.jclaw
                 ```
                 
                 ### 安装后
@@ -156,7 +156,7 @@ public class IdeCommand extends Command {
             
             ### VS Code
             ```bash
-            code --uninstall-extension jcode.jcode
+            code --uninstall-extension jclaw.jclaw
             ```
             
             ### IDEA
@@ -177,11 +177,11 @@ public class IdeCommand extends Command {
             
             ```json
             {
-              "jcode.enabled": true,
-              "jcode.model": "qwen3.5-plus",
-              "jcode.autoComplete": true,
-              "jcode.codeReview": true,
-              "jcode.terminal": {
+              "jclaw.enabled": true,
+              "jclaw.model": "qwen3.5-plus",
+              "jclaw.autoComplete": true,
+              "jclaw.codeReview": true,
+              "jclaw.terminal": {
                 "enabled": true,
                 "shell": "bash"
               }
@@ -199,7 +199,7 @@ public class IdeCommand extends Command {
             
             ### 自定义配置
             
-            在设置中搜索 "jcode" 进行配置
+            在设置中搜索 "jclaw" 进行配置
             """;
         
         return CommandResult.success("IDE 配置")

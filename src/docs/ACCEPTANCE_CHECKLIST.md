@@ -31,7 +31,7 @@
 ### 1.1 检查项目结构
 
 ```bash
-cd ~/.openclaw/workspace/projects/code/core/jcode
+cd ~/.openclaw/workspace/projects/code/core/jclaw
 ls -la
 ```
 
@@ -108,7 +108,7 @@ cat ~/api-keys.md | grep -A2 "DeepSeek"
 ### 2.1 运行单元测试
 
 ```bash
-cd ~/.openclaw/workspace/projects/code/core/jcode
+cd ~/.openclaw/workspace/projects/code/core/jclaw
 mvn clean test
 ```
 
@@ -136,7 +136,7 @@ BUILD SUCCESS
 #### 测试 Git 命令
 ```bash
 # 查看 Git 帮助
-java -cp target/classes com.openclaw.jcode.command.impl.GitCommand --help
+java -cp target/classes com.jclaw.command.impl.GitCommand --help
 ```
 
 ✅ **检查项**:
@@ -146,7 +146,7 @@ java -cp target/classes com.openclaw.jcode.command.impl.GitCommand --help
 #### 测试文件命令
 ```bash
 # 查看文件列表
-java -cp target/classes com.openclaw.jcode.command.impl.FilesCommand
+java -cp target/classes com.jclaw.command.impl.FilesCommand
 ```
 
 ✅ **检查项**:
@@ -160,7 +160,7 @@ java -cp target/classes com.openclaw.jcode.command.impl.FilesCommand
 #### 测试 IntentRecognitionTool
 ```bash
 # 查看工具列表
-ls src/main/java/com/openclaw/jcode/tools/ | wc -l
+ls src/main/java/com/openclaw/jclaw/tools/ | wc -l
 ```
 
 **预期**: >= 45 个工具
@@ -175,7 +175,7 @@ ls src/main/java/com/openclaw/jcode/tools/ | wc -l
 
 #### 测试 AI 助手
 ```bash
-cd ~/.openclaw/workspace/projects/code/core/jcode
+cd ~/.openclaw/workspace/projects/code/core/jclaw
 ai
 ```
 
@@ -204,7 +204,7 @@ JClaw 已集成大模型 API，支持多种模型提供商。
 #### 测试 AI 代码生成（实际调用）
 
 ```bash
-cd ~/.openclaw/workspace/projects/code/core/jcode/scripts
+cd ~/.openclaw/workspace/projects/code/core/jclaw/scripts
 ./test-ai-demo.sh
 ```
 
@@ -254,7 +254,7 @@ cd ~/.openclaw/workspace/projects/code/core/jcode/scripts
 **测试命令**:
 ```bash
 # 方法 1: 使用测试脚本
-cd ~/.openclaw/workspace/projects/code/core/jcode/scripts
+cd ~/.openclaw/workspace/projects/code/core/jclaw/scripts
 ./test-ai-demo.sh
 
 # 方法 2: 手动测试
@@ -319,7 +319,7 @@ public class Test {
 ### 5.1 检查核心文档
 
 ```bash
-cd ~/.openclaw/workspace/projects/code/core/jcode
+cd ~/.openclaw/workspace/projects/code/core/jclaw
 ls -lh *.md
 ```
 
@@ -422,7 +422,7 @@ cat FINAL_ACCEPTANCE_SUMMARY.md | head -50
 
 ### 1. 编译检查（2 分钟）
 ```bash
-cd ~/.openclaw/workspace/projects/code/core/jcode
+cd ~/.openclaw/workspace/projects/code/core/jclaw
 mvn clean compile
 # 预期：BUILD SUCCESS
 ```

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <property name="LOG_HOME" value="${user.home}/.openclaw/jcode/logs" />
+    <property name="LOG_HOME" value="${user.home}/.openclaw/jclaw/logs" />
     <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{requestId}] - %msg%n" />
 
     <!-- 控制台输出 -->
@@ -13,9 +13,9 @@
 
     <!-- 文件输出 -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_HOME}/jcode.log</file>
+        <file>${LOG_HOME}/jclaw.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_HOME}/jcode.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>${LOG_HOME}/jclaw.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>30</maxHistory>
             <totalSizeCap>1GB</totalSizeCap>
         </rollingPolicy>
@@ -27,12 +27,12 @@
 
     <!-- 错误日志 -->
     <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_HOME}/jcode-error.log</file>
+        <file>${LOG_HOME}/jclaw-error.log</file>
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>ERROR</level>
         </filter>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_HOME}/jcode-error.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>${LOG_HOME}/jclaw-error.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>30</maxHistory>
         </rollingPolicy>
         <encoder>
@@ -49,7 +49,7 @@
     </appender>
 
     <!-- 应用日志级别 -->
-    <logger name="com.openclaw.jcode" level="DEBUG" />
+    <logger name="com.jclaw" level="DEBUG" />
     <logger name="org.springframework" level="INFO" />
     <logger name="org.hibernate" level="WARN" />
 

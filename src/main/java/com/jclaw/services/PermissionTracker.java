@@ -80,7 +80,7 @@ public class PermissionTracker {
         this.preferencesPath = Paths.get(
             System.getProperty("user.home"),
             ".openclaw",
-            "jcode",
+            "jclaw",
             "preferences.json"
         );
         

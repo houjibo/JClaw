@@ -31,7 +31,7 @@ public class HotReloadConfig {
      */
     private final ConcurrentHashMap<String, Map<String, Object>> configHistory = new ConcurrentHashMap<>();
     
-    @Value("${jcode.workspace:${user.home}/.openclaw/workspace}")
+    @Value("${jclaw.workspace:${user.home}/.openclaw/workspace}")
     private String workspace;
     
     /**

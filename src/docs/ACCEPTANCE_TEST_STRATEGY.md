@@ -708,13 +708,13 @@ mvn test -Dtest=*CommandTest
 
 ```bash
 # 创建测试目录
-mkdir -p /tmp/jcode-test
+mkdir -p /tmp/jclaw-test
 
 # 创建测试文件
-echo "test content" > /tmp/jcode-test/test.txt
+echo "test content" > /tmp/jclaw-test/test.txt
 
 # 初始化 Git 仓库
-cd /tmp/jcode-test && git init
+cd /tmp/jclaw-test && git init
 
 # 准备测试配置
 cp config.example.yml config.yml

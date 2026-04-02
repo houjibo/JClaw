@@ -20,7 +20,7 @@ spring:
       write-dates-as-timestamps: false
 
 # JClaw 配置
-jcode:
+jclaw:
   workspace: ${user.home}/.openclaw/workspace
   max-read-size: 10485760  # 10MB
   allow-write: true
@@ -60,13 +60,13 @@ management:
 logging:
   level:
     root: INFO
-    com.openclaw.jcode: DEBUG
+    com.jclaw: DEBUG
     org.springframework: INFO
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{requestId}] - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{requestId}] - %msg%n"
   file:
-    name: ${user.home}/.openclaw/jcode/logs/jcode.log
+    name: ${user.home}/.openclaw/jclaw/logs/jclaw.log
 
 # Actuator 安全配置（生产环境应启用）
 # management:

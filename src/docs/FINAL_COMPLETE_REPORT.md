@@ -122,8 +122,8 @@
 ## 📊 项目架构
 
 ```
-jcode/
-├── src/main/java/com/openclaw/jcode/
+jclaw/
+├── src/main/java/com/openclaw/jclaw/
 │   ├── JClawApplication.java      # 主入口
 │   ├── core/                       # 核心抽象 (5)
 │   │   ├── Tool.java
@@ -286,7 +286,7 @@ curl -X POST http://localhost:8081/api/tools/deploy/execute \
 
 ## 📍 项目位置
 
-`~/.openclaw/workspace/projects/code/core/jcode/`
+`~/.openclaw/workspace/projects/code/core/jclaw/`
 
 **运行中**: http://localhost:8081
 

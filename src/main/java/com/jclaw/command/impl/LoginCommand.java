@@ -99,11 +99,11 @@ public class LoginCommand extends Command {
             
             ### 注册账号
             
-            访问：https://jcode.example.com/signup
+            访问：https://jclaw.example.com/signup
             
             ### 忘记密码
             
-            访问：https://jcode.example.com/reset
+            访问：https://jclaw.example.com/reset
             """;
         
         return CommandResult.success("登录帮助")

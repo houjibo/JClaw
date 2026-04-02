@@ -11,8 +11,8 @@
 ## 📁 项目结构
 
 ```
-jcode/
-├── src/main/java/com/openclaw/jclaw/
+jclaw/
+├── src/main/java/com/jclaw/
 │   ├── JClawApplication.java     # 主应用入口
 │   ├── core/                      # 核心抽象
 │   │   ├── Tool.java             # 工具基类
@@ -171,7 +171,7 @@ mvn spring-boot:run
 server:
   port: 8080
 
-jcode:
+jclaw:
   workspace: ${user.home}/.openclaw/workspace  # JClaw 工作目录
   max-read-size: 10485760                       # 最大读取大小 (10MB)
   allow-write: true                             # 允许写操作

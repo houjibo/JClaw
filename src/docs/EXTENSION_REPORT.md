@@ -61,7 +61,7 @@ curl -X POST http://localhost:8081/api/tools/file_edit/execute \
 curl -X POST http://localhost:8081/api/tools/web_fetch/execute \
   -H "Content-Type: application/json" \
   -d '{
-    "url": "https://github.com/openclaw/jcode",
+    "url": "https://github.com/openclaw/jclaw",
     "prompt": "项目介绍"
   }'
 ```
@@ -201,7 +201,7 @@ file_read path="/tmp/test.txt"
 
 ```bash
 # 抓取 GitHub 项目页面
-web_fetch url="https://github.com/openclaw/jcode" \
+web_fetch url="https://github.com/openclaw/jclaw" \
   prompt="项目介绍"
 # 返回：提取的项目描述内容 ✅
 ```
@@ -316,7 +316,7 @@ task_list
 
 ## 📍 项目位置
 
-`~/.openclaw/workspace/projects/code/core/jcode/`
+`~/.openclaw/workspace/projects/code/core/jclaw/`
 
 **运行中**: http://localhost:8081
 

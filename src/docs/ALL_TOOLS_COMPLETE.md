@@ -297,7 +297,7 @@ remote_trigger agent_id="agent_1" action="analyze"
 
 ## 📍 项目位置
 
-`~/.openclaw/workspace/projects/code/core/jcode/`
+`~/.openclaw/workspace/projects/code/core/jclaw/`
 
 **运行中**: http://localhost:8081
 

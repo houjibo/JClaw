@@ -12,7 +12,7 @@ import jakarta.validation.constraints.NotBlank;
  * JClaw 统一配置
  */
 @Component
-@ConfigurationProperties(prefix = "jcode")
+@ConfigurationProperties(prefix = "jclaw")
 @Validated
 public class JClawProperties {
     

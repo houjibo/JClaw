@@ -73,7 +73,7 @@ public class SkillTool extends Tool {
         this.skillsDir = Paths.get(
             System.getProperty("user.home"),
             ".openclaw",
-            "jcode",
+            "jclaw",
             "skills"
         );
         

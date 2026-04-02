@@ -7,7 +7,7 @@
 
 ## 📊 项目概况
 
-**位置**: `~/.openclaw/workspace/projects/code/core/jcode/`
+**位置**: `~/.openclaw/workspace/projects/code/core/jclaw/`
 
 **技术栈**:
 - Spring Boot 3.2.4
@@ -110,12 +110,12 @@ curl -X POST http://localhost:8081/api/tools/file_read/execute \
 ## 📁 项目结构
 
 ```
-jcode/
+jclaw/
 ├── pom.xml                          # Maven 配置
 ├── README.md                        # 项目文档
 ├── DEVELOPMENT_REPORT.md            # 开发报告（本文件）
 ├── src/main/
-│   ├── java/com/openclaw/jcode/
+│   ├── java/com/openclaw/jclaw/
 │   │   ├── JClawApplication.java    # 主入口
 │   │   ├── core/                    # 核心抽象 (5 个文件)
 │   │   ├── tools/                   # 工具实现 (9 个文件)
@@ -124,7 +124,7 @@ jcode/
 │   └── resources/
 │       └── application.yml          # 配置文件
 └── target/
-    └── jcode-1.0.0-SNAPSHOT.jar     # 可执行 JAR
+    └── jclaw-1.0.0-SNAPSHOT.jar     # 可执行 JAR
 ```
 
 **统计**:
