@@ -94,7 +94,7 @@ cat ~/api-keys.md | grep -A2 "DeepSeek"
 ```
 ## DeepSeek API
 
-- API Key: `sk-c0c89088c3ec49af8e6aa34d14abad76`
+- API Key: `sk-REDACTED`
 ```
 
 ✅ **检查项**:
@@ -258,7 +258,7 @@ cd ~/.openclaw/workspace/projects/code/core/jcode/scripts
 ./test-ai-demo.sh
 
 # 方法 2: 手动测试
-export DEEPSEEK_API_KEY=sk-c0c89088c3ec49af8e6aa34d14abad76
+export DEEPSEEK_API_KEY=sk-REDACTED
 curl -X POST "https://api.deepseek.com/v1/chat/completions" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $DEEPSEEK_API_KEY" \

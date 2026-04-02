@@ -546,7 +546,7 @@ public CommandResult withData(String key, Object value) {
 
 ```bash
 # 配置 API Key
-export DEEPSEEK_API_KEY=sk-c0c89088c3ec49af8e6aa34d14abad76
+export DEEPSEEK_API_KEY=sk-REDACTED
 
 # 审查 Command.java
 ai review "$(cat src/main/java/com/openclaw/jcode/command/Command.java)"
