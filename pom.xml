@@ -12,8 +12,8 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.openclaw</groupId>
-    <artifactId>jcode</artifactId>
+    <groupId>com.jclaw</groupId>
+    <artifactId>jclaw</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <name>JClaw</name>
 

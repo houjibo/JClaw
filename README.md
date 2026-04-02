@@ -12,7 +12,7 @@
 
 ```
 jcode/
-├── src/main/java/com/openclaw/jcode/
+├── src/main/java/com/openclaw/jclaw/
 │   ├── JClawApplication.java     # 主应用入口
 │   ├── core/                      # 核心抽象
 │   │   ├── Tool.java             # 工具基类
@@ -114,7 +114,7 @@ ws.onmessage = (event) => {
 
 ### 构建
 ```bash
-cd ~/.openclaw/workspace/projects/code/core/jcode
+cd ~/.openclaw/workspace/projects/code/core/JClaw
 mvn clean package
 ```
 
@@ -152,7 +152,7 @@ server:
   port: 8080
 
 jcode:
-  workspace: ${user.home}/.openclaw/workspace  # 工作目录
+  workspace: ${user.home}/.openclaw/workspace  # JClaw 工作目录
   max-read-size: 10485760                       # 最大读取大小 (10MB)
   allow-write: true                             # 允许写操作
   allow-exec: true                              # 允许命令执行
