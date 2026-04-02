@@ -119,6 +119,25 @@ mvn clean package
 ```
 
 ### 运行
+
+#### 方式 1：交互式 CLI（推荐）
+```bash
+mvn exec:java -Dexec.mainClass="com.jclaw.cli.JClawCli"
+```
+
+启动后进入交互式 REPL：
+```
+╔════════════════════════════════════════════════════════╗
+║  JClaw - Java 编码智能体                           ║
+║  版本：1.0.0                                      ║
+╚════════════════════════════════════════════════════════╝
+
+JClaw > commit
+JClaw > review
+JClaw > /help
+```
+
+#### 方式 2：Spring Boot 应用
 ```bash
 mvn spring-boot:run
 ```
@@ -126,6 +145,7 @@ mvn spring-boot:run
 应用启动后访问：
 - REST API: http://localhost:8080/api
 - WebSocket: ws://localhost:8080/ws
+- Swagger UI: http://localhost:8080/swagger-ui.html
 
 ## 📋 待实现功能
 
