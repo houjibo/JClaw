@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # FalkorDB - 图数据库（意图图谱/代码追溯）
+  falkordb:
+    image: falkordb/falkordb:edge
+    container_name: jclaw-falkordb
+    ports:
+      - "6379:6379"
+    environment:
+      - FALKORDB_MAX_QUEUED_QUERIES=1000
+      - FALKORDB_THREAD_COUNT=4
+    volumes:
+      - falkordb_data:/data
+    networks:
+      - jclaw-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # MySQL - 关系数据库（业务数据）
+  mysql:
+    image: mysql:8.0
+    container_name: jclaw-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: jclaw_password
+      MYSQL_DATABASE: jclaw
+      MYSQL_USER: jclaw
+      MYSQL_PASSWORD: jclaw_password
+      TZ: Asia/Shanghai
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init:/docker-entrypoint-initdb.d
+    networks:
+      - jclaw-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pjclaw_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # Redis - 缓存（记忆 L1 层/会话缓存）
+  redis:
+    image: redis:7-alpine
+    container_name: jclaw-redis
+    ports:
+      - "6380:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - jclaw-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+
+networks:
+  jclaw-network:
+    driver: bridge
+
+volumes:
+  falkordb_data:
+  mysql_data:
+  redis_data:
