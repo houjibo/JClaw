@@ -1,0 +1,222 @@
+package com.openclaw.jcode.controller;
+
+import com.openclaw.jcode.model.*;
+import com.openclaw.jcode.skill.*;
+import org.springframework.web.bind.annotation.*;
+import java.util.*;
+
+/**
+ * 模型和 Skill API 控制器
+ */
+@RestController
+@RequestMapping("/api")
+@CrossOrigin(origins = "*")
+public class ModelSkillController {
+    
+    private final ModelRegistry modelRegistry;
+    private final ModelService modelService;
+    private final SkillRegistry skillRegistry;
+    
+    public ModelSkillController(ModelRegistry modelRegistry, ModelService modelService, SkillRegistry skillRegistry) {
+        this.modelRegistry = modelRegistry;
+        this.modelService = modelService;
+        this.skillRegistry = skillRegistry;
+    }
+    
+    // ========== 模型管理 ==========
+    
+    /**
+     * 列出所有模型
+     */
+    @GetMapping("/models")
+    public Map<String, Object> listModels() {
+        List<Map<String, Object>> models = new ArrayList<>();
+        for (ModelConfig config : modelRegistry.listModels()) {
+            Map<String, Object> model = new HashMap<>();
+            model.put("id", config.getId());
+            model.put("name", config.getName());
+            model.put("provider", config.getProvider());
+            model.put("contextWindow", config.getContextWindow());
+            model.put("visionSupport", config.getVisionSupport());
+            model.put("enabled", config.getEnabled());
+            models.add(model);
+        }
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("count", models.size());
+        response.put("models", models);
+        response.put("default", modelRegistry.getDefaultModel().getId());
+        
+        return response;
+    }
+    
+    /**
+     * 设置默认模型
+     */
+    @PostMapping("/models/default")
+    public Map<String, Object> setDefaultModel(@RequestBody Map<String, String> request) {
+        String modelId = request.get("model_id");
+        
+        if (modelId == null) {
+            return Map.of("success", false, "error", "model_id 不能为空");
+        }
+        
+        Optional<ModelConfig> model = modelRegistry.getModel(modelId);
+        if (model.isEmpty()) {
+            return Map.of("success", false, "error", "模型不存在：" + modelId);
+        }
+        
+        modelRegistry.setDefaultModel(modelId);
+        
+        return Map.of("success", true, "message", "默认模型已设置为：" + modelId);
+    }
+    
+    /**
+     * 聊天完成
+     */
+    @PostMapping("/chat/completions")
+    public Map<String, Object> chatCompletions(@RequestBody Map<String, Object> request) {
+        try {
+            ChatRequest chatRequest = new ChatRequest();
+            chatRequest.setModel((String) request.getOrDefault("model", modelRegistry.getDefaultModel().getId()));
+            chatRequest.setMessages((List<Map<String, String>>) request.get("messages"));
+            
+            if (request.containsKey("temperature")) {
+                chatRequest.setTemperature(((Number) request.get("temperature")).doubleValue());
+            }
+            if (request.containsKey("max_tokens")) {
+                chatRequest.setMaxTokens(((Number) request.get("max_tokens")).intValue());
+            }
+            
+            long start = System.currentTimeMillis();
+            ChatResponse response = modelService.chat(chatRequest);
+            response.setDurationMs(System.currentTimeMillis() - start);
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("id", response.getId());
+            result.put("model", response.getModel());
+            result.put("content", response.getContent());
+            result.put("usage", Map.of(
+                    "prompt_tokens", response.getPromptTokens(),
+                    "completion_tokens", response.getCompletionTokens(),
+                    "total_tokens", response.getTotalTokens()
+            ));
+            result.put("duration_ms", response.getDurationMs());
+            
+            return result;
+            
+        } catch (Exception e) {
+            return Map.of("success", false, "error", e.getMessage());
+        }
+    }
+    
+    /**
+     * 简单对话
+     */
+    @PostMapping("/chat")
+    public Map<String, Object> simpleChat(@RequestBody Map<String, String> request) {
+        String message = request.get("message");
+        String modelId = request.get("model");
+        
+        if (message == null || message.isBlank()) {
+            return Map.of("success", false, "error", "message 不能为空");
+        }
+        
+        String response = modelService.simpleChat(message, modelId);
+        
+        return Map.of("success", true, "content", response);
+    }
+    
+    // ========== 技能管理 ==========
+    
+    /**
+     * 列出所有技能
+     */
+    @GetMapping("/skills")
+    public Map<String, Object> listSkills(@RequestParam(required = false) String category) {
+        List<Skill> skills;
+        
+        if (category != null) {
+            skills = skillRegistry.listSkillsByCategory(category);
+        } else {
+            skills = skillRegistry.listSkills();
+        }
+        
+        List<Map<String, Object>> skillList = new ArrayList<>();
+        for (Skill skill : skills) {
+            Map<String, Object> s = new HashMap<>();
+            s.put("id", skill.getId());
+            s.put("name", skill.getName());
+            s.put("description", skill.getDescription());
+            s.put("category", skill.getCategory());
+            s.put("version", skill.getVersion());
+            s.put("enabled", skill.getEnabled());
+            skillList.add(s);
+        }
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("count", skillList.size());
+        response.put("skills", skillList);
+        response.put("active", skillRegistry.getActiveSkills());
+        
+        return response;
+    }
+    
+    /**
+     * 获取技能详情
+     */
+    @GetMapping("/skills/{skillId}")
+    public Map<String, Object> getSkill(@PathVariable String skillId) {
+        Optional<Skill> skill = skillRegistry.getSkill(skillId);
+        
+        if (skill.isEmpty()) {
+            return Map.of("success", false, "error", "技能不存在：" + skillId);
+        }
+        
+        Skill s = skill.get();
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("skill", Map.of(
+                "id", s.getId(),
+                "name", s.getName(),
+                "description", s.getDescription(),
+                "category", s.getCategory(),
+                "version", s.getVersion(),
+                "author", s.getAuthor(),
+                "prompt", s.getPrompt(),
+                "enabled", s.getEnabled(),
+                "active", skillRegistry.isSkillActive(s.getId())
+        ));
+        
+        return result;
+    }
+    
+    /**
+     * 激活技能
+     */
+    @PostMapping("/skills/{skillId}/activate")
+    public Map<String, Object> activateSkill(@PathVariable String skillId) {
+        Optional<Skill> skill = skillRegistry.getSkill(skillId);
+        
+        if (skill.isEmpty()) {
+            return Map.of("success", false, "error", "技能不存在：" + skillId);
+        }
+        
+        skillRegistry.activateSkill(skillId);
+        
+        return Map.of("success", true, "message", "技能已激活：" + skillId);
+    }
+    
+    /**
+     * 关闭技能
+     */
+    @PostMapping("/skills/{skillId}/deactivate")
+    public Map<String, Object> deactivateSkill(@PathVariable String skillId) {
+        skillRegistry.deactivateSkill(skillId);
+        
+        return Map.of("success", true, "message", "技能已关闭：" + skillId);
+    }
+}
