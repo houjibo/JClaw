@@ -7,6 +7,30 @@ spring:
   application:
     name: JClaw
   
+  # 数据源配置 (H2 内存数据库用于测试)
+  datasource:
+    url: jdbc:h2:mem:jclaw;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  # H2 控制台
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  
+  # MyBatis-Plus 配置
+  mybatis-plus:
+    configuration:
+      map-underscore-to-camel-case: true
+      log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+    global-config:
+      db-config:
+        id-type: assign_id
+    mapper-locations: classpath*:/mapper/**/*.xml
+    type-aliases-package: com.jclaw.*.entity
+  
   # 文件上传配置
   servlet:
     multipart:
@@ -67,6 +91,11 @@ logging:
     file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{requestId}] - %msg%n"
   file:
     name: ${user.home}/.openclaw/jclaw/logs/jclaw.log
+
+# H2 数据库配置 (测试用)
+h2:
+  console:
+    enabled: true
 
 # Actuator 安全配置（生产环境应启用）
 # management:
