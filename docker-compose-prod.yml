@@ -1,0 +1,72 @@
+-- JClaw 生产环境 Docker Compose 配置
+
+version: '3.8'
+
+services:
+  # PostgreSQL
+  postgres:
+    image: postgres:16-alpine
+    container_name: jclaw-postgres
+    environment:
+      POSTGRES_DB: jclaw
+      POSTGRES_USER: jclaw
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - jclaw-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jclaw"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FalkorDB
+  falkordb:
+    image: falkordb/falkordb:edge
+    container_name: jclaw-falkordb
+    ports:
+      - "6379:6379"
+    networks:
+      - jclaw-network
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: jclaw-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - jclaw-network
+
+  # JClaw Application
+  jclaw:
+    build: .
+    container_name: jclaw-app
+    ports:
+      - "8080:8080"
+    environment:
+      DB_HOST: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      FALKORDB_HOST: falkordb
+    depends_on:
+      - postgres
+      - falkordb
+      - redis
+    networks:
+      - jclaw-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  jclaw-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
