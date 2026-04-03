@@ -2,7 +2,8 @@ package com.jclaw.test.controller;
 
 import com.jclaw.common.entity.Result;
 import com.jclaw.test.service.TestRecommenderService;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,11 +13,11 @@ import java.util.Map;
 /**
  * 测试推荐 REST API 控制器
  */
-@Slf4j
 @RestController
 @RequestMapping("/api/test")
 public class TestRecommenderController {
 
+    private static final Logger log = LoggerFactory.getLogger(TestRecommenderController.class);
     @Autowired
     private TestRecommenderService testService;
 

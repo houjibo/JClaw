@@ -2,7 +2,8 @@ package com.jclaw.intent.service.impl;
 
 import com.jclaw.intent.entity.Intent;
 import com.jclaw.intent.service.TaskDecompositionService;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -12,16 +13,16 @@ import java.util.Map;
 /**
  * 任务分解服务实现
  */
-@Slf4j
 @Service
 public class TaskDecompositionServiceImpl implements TaskDecompositionService {
 
+    private static final Logger log = LoggerFactory.getLogger(TaskDecompositionServiceImpl.class);
     @Override
     public List<Map<String, Object>> decompose(Intent intent) {
         log.info("分解意图为任务：{}", intent.getName());
         
         // TODO: 调用大模型 API 进行任务分解
-        List<Map<String, Object>> tasks = decomposeWithAI(intent);
+        List<Map<String, Object>> tasks = new ArrayList<>();
         
         return tasks;
     }

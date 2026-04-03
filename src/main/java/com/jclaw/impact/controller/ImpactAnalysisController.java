@@ -3,18 +3,19 @@ package com.jclaw.impact.controller;
 import com.jclaw.common.entity.Result;
 import com.jclaw.trace.service.ImpactAnalysis;
 import com.jclaw.impact.service.ImpactAnalysisService;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 /**
  * 影响分析 REST API 控制器
  */
-@Slf4j
 @RestController
 @RequestMapping("/api/impact")
 public class ImpactAnalysisController {
 
+    private static final Logger log = LoggerFactory.getLogger(ImpactAnalysisController.class);
     @Autowired
     private ImpactAnalysisService impactService;
 

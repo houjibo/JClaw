@@ -3,7 +3,8 @@ package com.jclaw.agent.service.impl;
 import com.jclaw.agent.entity.Subagent;
 import com.jclaw.agent.mapper.SubagentMapper;
 import com.jclaw.agent.service.SubagentService;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,10 +14,10 @@ import java.util.List;
 /**
  * Subagent 调度服务实现
  */
-@Slf4j
 @Service
 public class SubagentServiceImpl implements SubagentService {
 
+    private static final Logger log = LoggerFactory.getLogger(SubagentServiceImpl.class);
     @Autowired
     private SubagentMapper subagentMapper;
 

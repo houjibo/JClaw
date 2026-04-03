@@ -6,7 +6,8 @@ import com.jclaw.core.ToolResult;
 import com.jclaw.intent.entity.Intent;
 import com.jclaw.intent.service.IntentRecognitionService;
 import com.jclaw.intent.service.TaskDecompositionService;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,10 +17,10 @@ import java.util.Map;
 /**
  * 意图识别工具
  */
-@Slf4j
 @Component
 public class IntentRecognitionTool extends Tool {
 
+    private static final Logger log = LoggerFactory.getLogger(IntentRecognitionTool.class);
     @Autowired
     private IntentRecognitionService intentService;
 
@@ -37,8 +38,8 @@ public class IntentRecognitionTool extends Tool {
     }
 
     @Override
-    public ToolResult execute(ToolContext context) {
-        String userInput = context.getParam("input");
+    public ToolResult execute(Map<String, Object> params, ToolContext context) {
+        String userInput = (String) params.get("input");
         
         try {
             // 1. 识别意图
@@ -56,14 +57,10 @@ public class IntentRecognitionTool extends Tool {
             // 4. 为每个任务分配 Agent
             for (Map<String, Object> task : tasks) {
                 String agent = taskDecompositionService.assignAgent(task);
-                ((Map<String, Object>) task).put("assignedAgent", agent);
+                task.put("assignedAgent", agent);
             }
 
-            return ToolResult.success(Map.of(
-                "intent", intent,
-                "clarificationQuestions", questions,
-                "tasks", tasks
-            ));
+            return ToolResult.success("意图识别成功", tasks.toString());
 
         } catch (Exception e) {
             log.error("意图识别失败", e);

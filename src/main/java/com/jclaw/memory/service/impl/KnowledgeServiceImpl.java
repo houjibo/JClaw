@@ -6,7 +6,8 @@ import com.jclaw.memory.entity.Memory;
 import com.jclaw.memory.mapper.KnowledgeMapper;
 import com.jclaw.memory.mapper.MemoryMapper;
 import com.jclaw.memory.service.KnowledgeService;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,10 +19,10 @@ import java.util.Map;
 /**
  * 知识萃取服务实现
  */
-@Slf4j
 @Service
 public class KnowledgeServiceImpl implements KnowledgeService {
 
+    private static final Logger log = LoggerFactory.getLogger(KnowledgeServiceImpl.class);
     @Autowired
     private KnowledgeMapper knowledgeMapper;
 
@@ -98,12 +99,17 @@ public class KnowledgeServiceImpl implements KnowledgeService {
         log.info("删除知识：{}", id);
     }
 
+    @Override
+    public Knowledge extractFromDailyLog(String logId) {
+        // TODO: 实现从日志萃取知识
+        return null;
+    }
+
     /**
-     * AI 知识萃取（待实现）
+     * AI 知识萃取（辅助方法）
      */
     private String extractKnowledgeWithAI(Memory memory) {
         // TODO: 调用大模型 API 萃取知识
-        // 示例：从记忆内容中提取关键知识点
         return memory.getContent().toString();
     }
 }

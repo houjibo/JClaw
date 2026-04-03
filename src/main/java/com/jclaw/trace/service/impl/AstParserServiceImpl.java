@@ -1,9 +1,9 @@
 package com.jclaw.trace.service.impl;
 
-import com.jclaw.trace.ast.JavaAstParser;
 import com.jclaw.trace.entity.CodeUnit;
 import com.jclaw.trace.mapper.CodeUnitMapper;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,10 +14,10 @@ import java.nio.file.Paths;
 /**
  * AST 解析服务实现
  */
-@Slf4j
 @Service
 public class AstParserServiceImpl {
 
+    private static final Logger log = LoggerFactory.getLogger(AstParserServiceImpl.class);
     @Autowired
     private CodeUnitMapper codeUnitMapper;
 

@@ -1,5 +1,7 @@
 package com.jclaw.intent.service;
 
+import com.jclaw.intent.entity.Intent;
+
 import java.util.List;
 import java.util.Map;
 

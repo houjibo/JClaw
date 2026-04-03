@@ -7,7 +7,8 @@ import com.jclaw.trace.mapper.CodeUnitMapper;
 import com.jclaw.trace.mapper.CallRelationshipMapper;
 import com.jclaw.trace.service.TraceService;
 import com.jclaw.trace.service.ImpactAnalysis;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,10 +19,10 @@ import java.util.Map;
 /**
  * 代码追溯服务实现
  */
-@Slf4j
 @Service
 public class TraceServiceImpl implements TraceService {
 
+    private static final Logger log = LoggerFactory.getLogger(TraceServiceImpl.class);
     @Autowired
     private CodeUnitMapper codeUnitMapper;
 
@@ -65,7 +66,7 @@ public class TraceServiceImpl implements TraceService {
         return ImpactAnalysis.builder()
             .codeUnitId(codeUnitId)
             .affectedNodes(new ArrayList<>())
-            .relations(callChain)
+            .relations(new ArrayList<>())
             .statistics(Map.of(
                 "totalCalls", callChain.size(),
                 "riskLevel", callChain.size() > 10 ? "HIGH" : "LOW"

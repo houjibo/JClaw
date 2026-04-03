@@ -2,7 +2,8 @@ package com.jclaw.agent.coordinator;
 
 import com.jclaw.agent.entity.Subagent;
 import com.jclaw.agent.service.SubagentService;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -13,10 +14,10 @@ import java.util.Map;
 /**
  * 联军协调器 - 5 大 Agent 角色调度
  */
-@Slf4j
 @Component
 public class ArmyCoordinator {
 
+    private static final Logger log = LoggerFactory.getLogger(ArmyCoordinator.class);
     @Autowired
     private SubagentService subagentService;
 
