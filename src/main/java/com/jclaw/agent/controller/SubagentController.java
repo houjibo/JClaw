@@ -3,8 +3,7 @@ package com.jclaw.agent.controller;
 import com.jclaw.common.entity.Result;
 import com.jclaw.agent.entity.Subagent;
 import com.jclaw.agent.service.SubagentService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,9 +15,9 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/subagents")
+@Slf4j
 public class SubagentController {
 
-    private static final Logger log = LoggerFactory.getLogger(SubagentController.class);
     @Autowired
     private SubagentService subagentService;
 

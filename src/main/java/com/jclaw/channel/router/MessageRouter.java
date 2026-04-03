@@ -2,8 +2,7 @@ package com.jclaw.channel.router;
 
 import com.jclaw.channel.adapter.ChannelAdapter;
 import com.jclaw.channel.adapter.MessageListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,9 +14,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * 消息路由器
  */
 @Component
+@Slf4j
 public class MessageRouter implements MessageListener {
 
-    private static final Logger log = LoggerFactory.getLogger(MessageRouter.class);
     @Autowired
     private List<ChannelAdapter> channelAdapters;
 

@@ -3,8 +3,7 @@ package com.jclaw.intent.service.impl;
 import com.jclaw.intent.entity.Intent;
 import com.jclaw.intent.mapper.IntentMapper;
 import com.jclaw.intent.service.IntentRecognitionService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,9 +16,9 @@ import java.util.Map;
  * 意图识别服务实现
  */
 @Service
+@Slf4j
 public class IntentRecognitionServiceImpl implements IntentRecognitionService {
 
-    private static final Logger log = LoggerFactory.getLogger(IntentRecognitionServiceImpl.class);
     @Autowired
     private IntentMapper intentMapper;
 

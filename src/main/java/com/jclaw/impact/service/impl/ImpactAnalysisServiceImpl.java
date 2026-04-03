@@ -3,8 +3,7 @@ package com.jclaw.impact.service.impl;
 import com.jclaw.trace.service.ImpactAnalysis;
 import com.jclaw.trace.service.TraceService;
 import com.jclaw.impact.service.ImpactAnalysisService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,9 +11,9 @@ import org.springframework.stereotype.Service;
  * 影响分析服务实现
  */
 @Service
+@Slf4j
 public class ImpactAnalysisServiceImpl implements ImpactAnalysisService {
 
-    private static final Logger log = LoggerFactory.getLogger(ImpactAnalysisServiceImpl.class);
     @Autowired
     private TraceService traceService;
 

@@ -1,7 +1,6 @@
 package com.jclaw.config;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
@@ -18,9 +17,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @since 2026-04-01
  */
 @Component
+@Slf4j
 public class ConfigChangeDetector {
-    
-    private static final Logger log = LoggerFactory.getLogger(ConfigChangeDetector.class);
     
     /**
      * 配置文件路径

@@ -1,8 +1,7 @@
 package com.jclaw.schedule.service.impl;
 
 import com.jclaw.schedule.service.CronService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
@@ -18,9 +17,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * Cron 调度服务实现
  */
 @Service
+@Slf4j
 public class CronServiceImpl implements CronService {
 
-    private static final Logger log = LoggerFactory.getLogger(CronServiceImpl.class);
     private final TaskScheduler scheduler = new ThreadPoolTaskScheduler();
     private final Map<String, ScheduledTask> tasks = new ConcurrentHashMap<>();
 

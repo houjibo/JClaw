@@ -1,8 +1,7 @@
 package com.jclaw.test.service.impl;
 
 import com.jclaw.test.service.TestRecommenderService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -13,9 +12,9 @@ import java.util.Map;
  * 测试推荐服务实现
  */
 @Service
+@Slf4j
 public class TestRecommenderServiceImpl implements TestRecommenderService {
 
-    private static final Logger log = LoggerFactory.getLogger(TestRecommenderServiceImpl.class);
     @Override
     public List<Map<String, Object>> recommendTests(String filePath) {
         log.info("基于代码变更推荐测试：{}", filePath);

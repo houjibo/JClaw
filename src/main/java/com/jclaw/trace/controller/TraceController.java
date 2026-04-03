@@ -5,8 +5,7 @@ import com.jclaw.trace.entity.CodeUnit;
 import com.jclaw.trace.entity.CallRelationship;
 import com.jclaw.trace.service.TraceService;
 import com.jclaw.trace.service.ImpactAnalysis;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,9 +17,8 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/trace")
+@Slf4j
 public class TraceController {
-
-    private static final Logger log = LoggerFactory.getLogger(TraceController.class);
 
     @Autowired
     private TraceService traceService;

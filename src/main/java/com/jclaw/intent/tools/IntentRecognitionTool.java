@@ -6,8 +6,7 @@ import com.jclaw.core.ToolResult;
 import com.jclaw.intent.entity.Intent;
 import com.jclaw.intent.service.IntentRecognitionService;
 import com.jclaw.intent.service.TaskDecompositionService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -18,9 +17,9 @@ import java.util.Map;
  * 意图识别工具
  */
 @Component
+@Slf4j
 public class IntentRecognitionTool extends Tool {
 
-    private static final Logger log = LoggerFactory.getLogger(IntentRecognitionTool.class);
     @Autowired
     private IntentRecognitionService intentService;
 

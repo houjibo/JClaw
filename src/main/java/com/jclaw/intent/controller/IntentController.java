@@ -3,8 +3,7 @@ package com.jclaw.intent.controller;
 import com.jclaw.common.entity.Result;
 import com.jclaw.intent.entity.Intent;
 import com.jclaw.intent.service.IntentRecognitionService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,9 +15,9 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/intents")
+@Slf4j
 public class IntentController {
 
-    private static final Logger log = LoggerFactory.getLogger(IntentController.class);
     @Autowired
     private IntentRecognitionService intentService;
 

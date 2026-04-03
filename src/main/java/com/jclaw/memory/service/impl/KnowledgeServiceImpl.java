@@ -6,8 +6,7 @@ import com.jclaw.memory.entity.Memory;
 import com.jclaw.memory.mapper.KnowledgeMapper;
 import com.jclaw.memory.mapper.MemoryMapper;
 import com.jclaw.memory.service.KnowledgeService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,9 +19,9 @@ import java.util.Map;
  * 知识萃取服务实现
  */
 @Service
+@Slf4j
 public class KnowledgeServiceImpl implements KnowledgeService {
 
-    private static final Logger log = LoggerFactory.getLogger(KnowledgeServiceImpl.class);
     @Autowired
     private KnowledgeMapper knowledgeMapper;
 
