@@ -72,9 +72,9 @@ done
 echo "🔒 检查硬编码密码..."
 
 PASSWORD_PATTERNS=(
-    "password\s*=\s*\"[^\"]{4,}\""
-    "passwd\s*=\s*\"[^\"]{4,}\""
-    "secret\s*=\s*\"[^\"]{8,}\""
+    'password\s*=\s*"[^"]{4,}"'
+    'passwd\s*=\s*"[^"]{4,}"'
+    'secret\s*=\s*"[^"]{8,}"'
 )
 
 for pattern in "${PASSWORD_PATTERNS[@]}"; do

@@ -36,7 +36,7 @@ docs/NEO4J_SETUP.md
 
 ---
 
-### 任务 2: MySQL 技术预研 (#3)
+### 任务 2: PostgreSQL 技术预研 (#3)
 
 **目标**: 设计数据库 schema 并搭建环境
 
@@ -55,10 +55,10 @@ docs/NEO4J_SETUP.md
 
 **预期产出**:
 ```
-database/jclaw-mysql-init.sql
-src/main/resources/docker/mysql-compose.yml
+database/jclaw-postgres-init.sql
+src/main/resources/docker/postgres-compose.yml
 src/main/java/com/jclaw/config/MybatisPlusConfig.java
-docs/MYSQL_SCHEMA_DESIGN.md
+docs/POSTGRES_SCHEMA_DESIGN.md
 ```
 
 **预计时间**: 2 天

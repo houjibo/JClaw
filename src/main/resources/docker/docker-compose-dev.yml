@@ -1,7 +1,31 @@
 version: '3.8'
 
 services:
-  # FalkorDB - 图数据库（意图图谱/代码追溯）
+  # PostgreSQL - 关系数据库（业务数据 + 记忆 + 追溯）
+  postgres:
+    image: postgres:16-alpine
+    container_name: jclaw-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: jclaw
+      POSTGRES_USER: jclaw
+      POSTGRES_PASSWORD: jclaw_password
+      TZ: Asia/Shanghai
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d
+    networks:
+      - jclaw-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jclaw -d jclaw"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # FalkorDB - 图数据库（意图图谱 + 代码追溯图谱）
   falkordb:
     image: falkordb/falkordb:edge
     container_name: jclaw-falkordb
@@ -20,31 +44,6 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
-    restart: unless-stopped
-
-  # MySQL - 关系数据库（业务数据）
-  mysql:
-    image: mysql:8.0
-    container_name: jclaw-mysql
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: jclaw_password
-      MYSQL_DATABASE: jclaw
-      MYSQL_USER: jclaw
-      MYSQL_PASSWORD: jclaw_password
-      TZ: Asia/Shanghai
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./init:/docker-entrypoint-initdb.d
-    networks:
-      - jclaw-network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pjclaw_password"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
     restart: unless-stopped
 
   # Redis - 缓存（记忆 L1 层/会话缓存）
@@ -71,6 +70,6 @@ networks:
     driver: bridge
 
 volumes:
+  postgres_data:
   falkordb_data:
-  mysql_data:
   redis_data:
