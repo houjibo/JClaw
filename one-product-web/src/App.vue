@@ -37,6 +37,14 @@ export default {
 #app {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
   height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#app .el-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .el-header {
@@ -46,6 +54,7 @@ export default {
   flex-direction: column;
   align-items: center;
   padding: 10px;
+  flex-shrink: 0;
 }
 
 .el-header h1 {
@@ -70,6 +79,9 @@ export default {
 .el-main {
   padding: 20px;
   background: #f5f7fa;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .el-footer {
@@ -77,5 +89,7 @@ export default {
   color: white;
   text-align: center;
   line-height: 40px;
+  flex-shrink: 0;
+  height: 40px;
 }
 </style>
