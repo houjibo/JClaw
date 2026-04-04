@@ -77,7 +77,7 @@ export default {
 }
 
 .el-main {
-  padding: 20px;
+  padding: 10px 20px;
   background: #f5f7fa;
   flex: 1;
   overflow-y: auto;

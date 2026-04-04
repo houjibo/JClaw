@@ -202,6 +202,7 @@ const viewLogs = (row) => {
 <style scoped>
 .channel-manager {
   padding: 0;
+  height: 100%;
 }
 
 .card-header {
@@ -211,19 +212,20 @@ const viewLogs = (row) => {
 }
 
 .channels {
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 }
 
 .message-logs {
-  margin: 30px 0;
+  margin: 20px 0;
 }
 
 .broadcast {
-  margin-top: 30px;
+  margin-top: 20px;
+  margin-bottom: 10px;
 }
 
 .broadcast-actions {
-  margin-top: 15px;
+  margin-top: 10px;
   display: flex;
   align-items: center;
   gap: 15px;
@@ -231,5 +233,9 @@ const viewLogs = (row) => {
 
 .broadcast-actions .el-button {
   margin-left: auto;
+}
+
+:deep(.el-card__body) {
+  padding: 15px;
 }
 </style>
