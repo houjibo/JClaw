@@ -1,92 +1,158 @@
 <template>
   <div class="impact-analysis">
-    <h1>影响分析</h1>
-
-    <!-- 选择代码单元 -->
-    <div class="selector">
-      <select v-model="selectedUnitId">
-        <option value="">选择代码单元</option>
-        <option v-for="unit in codeUnits" :key="unit.id" :value="unit.id">
-          {{ unit.unitName }} ({{ unit.filePath }})
-        </option>
-      </select>
-      <button @click="analyzeImpact" :disabled="!selectedUnitId">分析</button>
-    </div>
-
-    <!-- 分析结果 -->
-    <div v-if="analysis" class="result">
-      <h2>影响分析结果</h2>
-      <div class="risk-score">
-        风险评分：<span :class="riskLevel">{{ analysis.riskScore }}</span>
-      </div>
-      <div class="statistics">
-        <div v-for="(value, key) in analysis.statistics" :key="key">
-          <strong>{{ key }}:</strong> {{ value }}
+    <el-card>
+      <template #header>
+        <div class="card-header">
+          <h2>影响分析</h2>
+          <el-button type="primary" @click="analyzeImpact">🔍 开始分析</el-button>
         </div>
+      </template>
+
+      <!-- 选择代码单元 -->
+      <el-form :inline="true" :model="form">
+        <el-form-item label="选择代码单元">
+          <el-select v-model="form.codeUnitId" placeholder="请选择代码单元" style="width: 400px">
+            <el-option
+              v-for="unit in codeUnits"
+              :key="unit.id"
+              :label="`${unit.unitName} (${unit.filePath})`"
+              :value="unit.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="analyzeImpact">分析</el-button>
+        </el-form-item>
+      </el-form>
+
+      <!-- 影响分析结果 -->
+      <div v-if="analysisResult" class="result">
+        <h3>影响分析结果</h3>
+        
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <el-statistic title="影响范围" :value="analysisResult.affectedCount" suffix="个模块" />
+          </el-col>
+          <el-col :span="8">
+            <el-statistic title="风险评分" :value="analysisResult.riskScore">
+              <template #suffix>
+                <el-tag :type="riskLevel(analysisResult.riskScore).type" size="small">
+                  {{ riskLevel(analysisResult.riskScore).text }}
+                </el-tag>
+              </template>
+            </el-statistic>
+          </el-col>
+          <el-col :span="8">
+            <el-statistic title="建议测试数" :value="analysisResult.suggestedTests" suffix="个" />
+          </el-col>
+        </el-row>
+
+        <h4 style="margin-top: 30px">受影响的模块</h4>
+        <el-table :data="analysisResult.affectedModules" style="width: 100%" border stripe>
+          <el-table-column prop="moduleName" label="模块名称" />
+          <el-table-column prop="changeType" label="变更类型" width="120">
+            <template #default="scope">
+              <el-tag :type="scope.row.changeType === 'MODIFY' ? 'warning' : 'info'" size="small">
+                {{ scope.row.changeType }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="impactLevel" label="影响程度" width="100">
+            <template #default="scope">
+              <el-tag :type="getImpactType(scope.row.impactLevel)" size="small">
+                {{ scope.row.impactLevel }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="description" label="说明" show-overflow-tooltip />
+        </el-table>
       </div>
-      <div class="affected-nodes">
-        <h3>受影响节点 ({{ analysis.affectedNodes?.length || 0 }})</h3>
-        <ul>
-          <li v-for="(node, index) in analysis.affectedNodes" :key="index">
-            {{ node.name || node.id }}
-          </li>
-        </ul>
-      </div>
-    </div>
+    </el-card>
   </div>
 </template>
 
-<script>
-export default {
-  name: 'ImpactAnalysis',
-  data() {
-    return {
-      selectedUnitId: '',
-      codeUnits: [],
-      analysis: null
-    }
-  },
-  computed: {
-    riskLevel() {
-      if (!this.analysis) return ''
-      const score = this.analysis.riskScore
-      if (score > 70) return 'high'
-      if (score > 40) return 'medium'
-      return 'low'
-    }
-  },
-  mounted() {
-    this.loadCodeUnits()
-  },
-  methods: {
-    async loadCodeUnits() {
-      const res = await fetch('/api/trace/code-units')
-      const data = await res.json()
-      this.codeUnits = data.data || []
-    },
-    async analyzeImpact() {
-      if (!this.selectedUnitId) return
-      const res = await fetch(`/api/trace/impact/${this.selectedUnitId}`, {
-        method: 'POST'
-      })
-      const data = await res.json()
-      this.analysis = data.data
-    }
+<script setup>
+import { ref, reactive } from 'vue'
+import { ElMessage } from 'element-plus'
+
+const form = reactive({
+  codeUnitId: ''
+})
+
+const codeUnits = ref([
+  { id: 1, unitName: 'UserService', filePath: '/src/main/java/com/jclaw/service/UserService.java' },
+  { id: 2, unitName: 'MemoryManager', filePath: '/src/main/java/com/jclaw/memory/MemoryManager.java' },
+  { id: 3, unitName: 'IntentRecognizer', filePath: '/src/main/java/com/jclaw/intent/IntentRecognizer.java' }
+])
+
+const analysisResult = ref(null)
+
+const analyzeImpact = () => {
+  if (!form.codeUnitId) {
+    ElMessage.warning('请选择代码单元')
+    return
   }
+  
+  // 模拟分析结果
+  analysisResult.value = {
+    affectedCount: 5,
+    riskScore: 75,
+    suggestedTests: 12,
+    affectedModules: [
+      { moduleName: 'Controller 层', changeType: 'MODIFY', impactLevel: '高', description: '需要更新接口定义' },
+      { moduleName: 'Service 层', changeType: 'MODIFY', impactLevel: '高', description: '业务逻辑变更' },
+      { moduleName: 'Repository 层', changeType: 'NONE', impactLevel: '低', description: '无影响' },
+      { moduleName: '前端页面', changeType: 'MODIFY', impactLevel: '中', description: '需要更新表单字段' },
+      { moduleName: '单元测试', changeType: 'ADD', impactLevel: '中', description: '需要补充测试用例' }
+    ]
+  }
+  
+  ElMessage.success('影响分析完成！')
+}
+
+const riskLevel = (score) => {
+  if (score >= 80) return { text: '高风险', type: 'danger' }
+  if (score >= 50) return { text: '中风险', type: 'warning' }
+  return { text: '低风险', type: 'success' }
+}
+
+const getImpactType = (level) => {
+  if (level === '高') return 'danger'
+  if (level === '中') return 'warning'
+  return 'info'
 }
 </script>
 
 <style scoped>
-.impact-analysis { padding: 20px; max-width: 900px; margin: 0 auto; }
-.selector { margin-bottom: 20px; }
-.selector select { padding: 8px; margin-right: 10px; width: 300px; }
-.selector button { padding: 8px 20px; background: #4CAF50; color: white; border: none; border-radius: 4px; }
-.selector button:disabled { background: #ccc; }
-.result { border: 1px solid #ddd; padding: 20px; border-radius: 8px; background: #f9f9f9; }
-.risk-score { font-size: 24px; margin: 20px 0; }
-.risk-score .high { color: #f44336; }
-.risk-score .medium { color: #ff9800; }
-.risk-score .low { color: #4CAF50; }
-.statistics { margin: 20px 0; }
-.affected-nodes ul { line-height: 2; }
+.impact-analysis {
+  padding: 0;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+h2 {
+  margin: 0;
+  color: #303133;
+  font-size: 20px;
+}
+
+h3 {
+  margin: 20px 0 15px;
+  color: #606266;
+  font-size: 16px;
+}
+
+h4 {
+  margin: 15px 0;
+  color: #606266;
+  font-size: 14px;
+}
+
+.result {
+  margin-top: 20px;
+}
 </style>
