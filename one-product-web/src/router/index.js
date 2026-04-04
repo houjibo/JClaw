@@ -7,6 +7,7 @@ import SubagentManager from '../views/SubagentManager.vue'
 import ChannelManager from '../views/ChannelManager.vue'
 import TestRecommender from '../views/TestRecommender.vue'
 import ConfigPanel from '../views/ConfigPanel.vue'
+import ChatPanel from '../views/ChatPanel.vue'
 import Home from '../views/Home.vue'
 
 const routes = [
@@ -18,7 +19,8 @@ const routes = [
   { path: '/agent', name: 'Agent', component: SubagentManager },
   { path: '/channel', name: 'Channel', component: ChannelManager },
   { path: '/test', name: 'Test', component: TestRecommender },
-  { path: '/config', name: 'Config', component: ConfigPanel }
+  { path: '/config', name: 'Config', component: ConfigPanel },
+  { path: '/chat', name: 'Chat', component: ChatPanel }
 ]
 
 const router = createRouter({

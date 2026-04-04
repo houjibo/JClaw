@@ -12,6 +12,7 @@
           <el-menu-item index="/agent">Agent</el-menu-item>
           <el-menu-item index="/channel">通道</el-menu-item>
           <el-menu-item index="/test">测试</el-menu-item>
+          <el-menu-item index="/chat">💬 聊天</el-menu-item>
           <el-menu-item index="/config">配置</el-menu-item>
         </el-menu>
       </el-header>
