@@ -72,11 +72,12 @@ const sendMessage = async () => {
   }
 
   // 添加用户消息
-  messages.value.push({
+  const userMsg = {
     role: 'user',
     content: inputMessage.value,
     time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-  })
+  }
+  messages.value.push(userMsg)
 
   const userMessage = inputMessage.value
   inputMessage.value = ''
@@ -85,16 +86,58 @@ const sendMessage = async () => {
   await nextTick()
   scrollToBottom()
 
-  // 模拟 AI 回复
-  setTimeout(() => {
-    const reply = getAIReply(userMessage)
+  // 显示加载中
+  const loadingMsg = {
+    role: 'assistant',
+    content: '思考中...',
+    time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+  }
+  messages.value.push(loadingMsg)
+  await nextTick()
+  scrollToBottom()
+
+  try {
+    // 调用真实 API
+    const response = await fetch('http://localhost:8080/api/chat/message', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: 'default',
+        message: userMessage,
+        model: 'qwen-plus'
+      })
+    })
+
+    const data = await response.json()
+    
+    // 移除加载消息
+    messages.value.pop()
+    
+    if (data.success) {
+      messages.value.push({
+        role: 'assistant',
+        content: data.data.content,
+        time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+      })
+    } else {
+      messages.value.push({
+        role: 'assistant',
+        content: '抱歉，出错了：' + (data.error?.message || '未知错误'),
+        time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+      })
+    }
+  } catch (error) {
+    // 移除加载消息
+    messages.value.pop()
     messages.value.push({
       role: 'assistant',
-      content: reply,
+      content: '网络错误，请稍后再试',
       time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
     })
-    nextTick(() => scrollToBottom())
-  }, 1000)
+  }
+  
+  await nextTick()
+  scrollToBottom()
 }
 
 const getAIReply = (message) => {
