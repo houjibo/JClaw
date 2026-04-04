@@ -29,7 +29,7 @@ public class ToolController {
             Map<String, Object> toolInfo = new HashMap<>();
             toolInfo.put("name", tool.getName());
             toolInfo.put("description", tool.getDescription());
-            toolInfo.put("category", tool.getCategory().name());
+            toolInfo.put("category", tool.getCategory() != null ? tool.getCategory().name() : "UNKNOWN");
             toolInfo.put("requiresConfirmation", tool.isRequiresConfirmation());
             tools.add(toolInfo);
         }

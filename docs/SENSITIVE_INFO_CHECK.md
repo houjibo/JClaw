@@ -14,7 +14,7 @@
 - [x] 检查配置文件中明文密码
 - [x] 检查 placeholder 使用
 
-**结果**: ⚠️ 发现默认密码，已修复
+**结果**: ✅ 已修复，使用环境变量
 
 ### 3. Token 检查
 - [x] 检查 JWT Secret
@@ -34,10 +34,10 @@
 
 ## 🔧 已修复问题
 
-### 问题 1: 默认数据库密码
-**位置**: `src/main/resources/application.yml`
-**问题**: 使用固定密码 `jclaw_password`
-**修复**: 改为环境变量 `${DB_PASSWORD:}`
+### 问题 1: 数据库密码硬编码
+**位置**: `src/main/resources/application.yml` 和 `docker-compose-dev.yml`
+**问题**: 使用固定密码
+**修复**: 改为环境变量
 
 **修复前**:
 ```yaml
@@ -47,6 +47,8 @@ password: jclaw_password
 **修复后**:
 ```yaml
 password: ${DB_PASSWORD:}
+# Docker Compose
+POSTGRES_PASSWORD: ${DB_PASSWORD:-jclaw_password}
 ```
 
 ---

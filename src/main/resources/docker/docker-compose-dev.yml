@@ -10,7 +10,7 @@ services:
     environment:
       POSTGRES_DB: jclaw
       POSTGRES_USER: jclaw
-      POSTGRES_PASSWORD: jclaw_password
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-jclaw_password}
       TZ: Asia/Shanghai
     volumes:
       - postgres_data:/var/lib/postgresql/data
