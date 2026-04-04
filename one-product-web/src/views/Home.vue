@@ -24,11 +24,11 @@
       
       <div class="quick-links">
         <h3>快速入口</h3>
-        <el-button type="primary" @click="$router.push('/intent')">意图驱动</el-button>
-        <el-button type="success" @click="$router.push('/trace')">代码追溯</el-button>
-        <el-button type="warning" @click="$router.push('/impact')">影响分析</el-button>
-        <el-button type="info" @click="$router.push('/agent')">Agent 管理</el-button>
-        <el-button type="danger" @click="$router.push('/config')">系统配置</el-button>
+        <el-button type="primary" @click="navigateTo('intent')">意图驱动</el-button>
+        <el-button type="success" @click="navigateTo('trace')">代码追溯</el-button>
+        <el-button type="warning" @click="navigateTo('impact')">影响分析</el-button>
+        <el-button type="info" @click="navigateTo('agent')">Agent 管理</el-button>
+        <el-button type="danger" @click="navigateTo('config')">系统配置</el-button>
       </div>
       
       <div class="model-status">
@@ -36,16 +36,22 @@
         <el-tag :type="modelStore.activeModel === 'qwen' ? 'primary' : 'info'">
           {{ modelStore.activeModelConfig.name }}
         </el-tag>
-        <el-button size="small" @click="$router.push('/config')">切换模型</el-button>
+        <el-button size="small" @click="navigateTo('config')">切换模型</el-button>
       </div>
     </el-card>
   </div>
 </template>
 
 <script setup>
-import { useModelStore } from '@/stores/model'
+import { inject } from 'vue'
 
-const modelStore = useModelStore()
+const setActiveMenu = inject('setActiveMenu')
+
+const navigateTo = (menu) => {
+  if (setActiveMenu) {
+    setActiveMenu(menu)
+  }
+}
 </script>
 
 <style scoped>

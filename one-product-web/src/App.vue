@@ -85,7 +85,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, provide } from 'vue'
 import {
   HomeFilled,
   Folder,
@@ -146,6 +146,11 @@ const pageTitle = computed(() => {
 const handleMenuSelect = (index) => {
   activeMenu.value = index
 }
+
+// 提供给子组件使用
+provide('setActiveMenu', (menu) => {
+  activeMenu.value = menu
+})
 </script>
 
 <style>
