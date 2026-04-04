@@ -45,11 +45,14 @@
 <script setup>
 import { inject } from 'vue'
 
-const setActiveMenu = inject('setActiveMenu')
+const setActiveMenu = inject('setActiveMenu', null)
 
 const navigateTo = (menu) => {
+  console.log('导航到:', menu)
   if (setActiveMenu) {
     setActiveMenu(menu)
+  } else {
+    console.warn('setActiveMenu 未提供')
   }
 }
 </script>
