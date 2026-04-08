@@ -96,8 +96,8 @@ api-keys.md
 secrets.md
 
 # 前端
-frontend/node_modules/
-frontend/dist/
+src/main/resources/frontend/node_modules/
+src/main/resources/frontend/dist/
 
 # 静态资源 (构建产物)
 src/main/resources/static/
