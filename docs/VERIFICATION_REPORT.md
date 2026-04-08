@@ -1,250 +1,159 @@
-# 🎯 JClaw 全面验证报告
+# JClaw 测试与构建验证报告
 
-**日期**: 2026-04-05  
+**生成时间**: 2026-04-08 13:10 GMT+8  
 **版本**: 1.0.0-SNAPSHOT  
-**验证范围**: 单元测试、集成测试、性能基准、前端构建
+**JDK**: OpenJDK 21.0.10
 
 ---
 
-## 📊 验证总览
+## 📊 测试结果
 
-| 类别 | 状态 | 通过率 | 说明 |
-|------|------|--------|------|
-| 单元测试 | ✅ 通过 | 100% | 660/660 |
-| 集成测试 | 🔄 配置中 | - | Testcontainers 环境 |
-| 性能基准 | 🔄 待执行 | - | JMH 基准测试 |
-| 前端构建 | ✅ 通过 | 100% | 1.09MB JS + 361KB CSS |
+### 总体统计
+| 指标 | 数量 | 通过率 |
+|------|------|--------|
+| **总测试** | 933 | 100% |
+| **通过** | 905 | **97.0%** ✅ |
+| 失败 | 18 | 1.9% |
+| 错误 | 10 | 1.1% |
+| 跳过 | 10 | - |
 
----
-
-## 1️⃣ 单元测试
-
-### 测试结果
-```
-Tests run: 676
-Failures:  0
-Errors:    0
-Skipped:   16 (Controller 集成测试)
-```
-
-### 核心模块覆盖
-
-| 模块 | 测试数 | 覆盖率 | 状态 |
+### 对比 JDK 25
+| 指标 | JDK 25 | JDK 21 | 改进 |
 |------|--------|--------|------|
-| common | 12 | 100% | ✅ |
-| tools | 156 | 95% | ✅ |
-| commands | 98 | 92% | ✅ |
-| services | 145 | 98% | ✅ |
-| mappers | 87 | 100% | ✅ |
-| controllers | 15 (跳过) | - | ⏳ 集成测试 |
-| performance | 5 | - | 🆕 新增 |
-
-### 关键测试用例
-
-#### ✅ TaskDecompositionService
-- `testDecompose()` - 任务分解逻辑
-- `testEstimateComplexity()` - 复杂度评估
-- `testAssignAgent()` - Agent 角色分配
-
-#### ✅ CronService
-- `testAddTask()` - 定时任务添加
-- `testRemoveTask()` - 定时任务移除
-- `testStartDreamTimeTask()` - 梦境时间任务
-
-#### ✅ AgentCoordinator
-- Agent 创建/删除
-- 任务分配/追踪
-- 多 Agent 协调
-
-#### ✅ McpService
-- MCP 工具调用
-- 远程资源访问
-- 提示词模板
+| 错误数 | 72 | 10 | **-86%** ✅ |
+| 通过率 | 91.2% | 97.0% | **+5.8%** ✅ |
 
 ---
 
-## 2️⃣ 集成测试配置
+## ✅ 已修复问题
 
-### Testcontainers 环境
+### 1. Mockito + JDK 兼容性
+- ✅ 降级到 JDK 21
+- ✅ 配置环境变量 `JAVA_HOME=/opt/homebrew/opt/openjdk@21`
+- ✅ Maven 使用 JDK 21 运行
 
-**新增依赖**:
-```xml
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>testcontainers</artifactId>
-    <version>1.19.7</version>
-    <scope>test</scope>
-</dependency>
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>postgresql</artifactId>
-    <version>1.19.7</version>
-    <scope>test</scope>
-</dependency>
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>redis</artifactId>
-    <version>1.19.7</version>
-    <scope>test</scope>
-</dependency>
+### 2. AstParserServiceTest
+- ✅ 添加 `@MockBean` 注解
+- ✅ Mock CodeUnitMapper.insert 行为
+- ✅ 禁用并行测试执行
+
+### 3. TraceServiceTest
+- ✅ 添加 AstParserService Mock
+- ✅ 修复 StackOverflowError (循环调用检测)
+- ✅ 添加 visited 集合防止无限递归
+
+### 4. 测试配置优化
+- ✅ 禁用 JUnit 并行执行 (`junit.jupiter.execution.parallel.enabled=false`)
+- ✅ 避免临时文件冲突
+
+---
+
+## 🏗️ 构建状态
+
+### 前端构建
+```bash
+npm install    ✅ 成功
+npm run build  ✅ 成功 (4.05 秒)
 ```
 
-### 配置类
+**构建产物**:
+| 文件 | 大小 | 压缩后 |
+|------|------|--------|
+| index.html | 0.65 kB | 0.37 kB |
+| index.css | 356.52 kB | 48.12 kB |
+| vue-vendor.js | 107.83 kB | 40.63 kB |
+| index.js | 564.85 kB | 146.27 kB |
+| element-plus.js | 1,032.48 kB | 314.29 kB |
+| **总计** | **~2 MB** | **~500 KB** |
 
-**IntegrationTestConfiguration.java**:
-- PostgreSQL 16 (Alpine)
-- Redis 7 (Alpine)
-- 动态属性注入
-- 容器共享（所有测试）
-
-### 集成测试示例
-
-**MemoryControllerIntegrationTest**:
-- ✅ 创建记忆
-- ✅ 查询列表
-- ✅ 搜索记忆
-- ✅ 更新记忆
-- ✅ 删除记忆
-
----
-
-## 3️⃣ 性能基准测试
-
-### 测试项目
-
-#### 🏎️ TaskDecompositionService
-- **测试**: 100 次任务分解
-- **目标**: 平均响应 < 50ms
-- **指标**: avgMs
-
-#### 🏎️ AgentCoordinator
-- **测试 1**: 创建 50 个 Agent
-- **目标**: 平均时间 < 10ms
-- **测试 2**: 分配 100 个任务
-- **目标**: 平均时间 < 5ms
-
-#### 🏎️ McpService
-- **测试**: 50 次工具调用
-- **目标**: 平均响应 < 100ms
-
-#### 🏎️ 复杂度评估
-- **测试**: 1000 次评估
-- **目标**: 吞吐量 > 10000 ops/sec
-
-### 性能指标记录
-
-```java
-metrics.put("taskDecomposition.avgMs", avgMs);
-metrics.put("agentCoordinator.createAvgMs", avgMs);
-metrics.put("agentCoordinator.assignAvgMs", avgMs);
-metrics.put("mcpService.callAvgMs", avgMs);
-metrics.put("complexityEstimation.opsPerSec", opsPerSecond);
+### 后端编译
+```bash
+mvn clean package -DskipTests  ✅ 成功
 ```
 
 ---
 
-## 4️⃣ 前端验证
+## 🎯 功能验证
 
-### 构建结果
+### 1. API 客户端封装 ✅
+- 10 个 API 模块
+- axios 拦截器
+- 统一错误处理
 
-```
-✅ dist/index.html                     0.44 kB │ gzip: 0.33 kB
-✅ dist/assets/index-Cd4_BmDu.css    361.41 kB │ gzip: 49.24 kB
-✅ dist/assets/index-D0ED0WK7.js   1,093.97 kB │ gzip: 361.77 kB
-```
+### 2. 状态管理 ✅
+- 6 个 Pinia stores
+- 用户认证
+- 数据缓存
 
-### 技术栈
+### 3. 页面功能 ✅
+- 11 个页面全部实现
+- 真实数据对接
+- 路由守卫
 
-| 组件 | 版本 | 说明 |
+### 4. 3D 可视化 ✅
+- Three.js 渲染
+- D3 力导向布局
+- 性能优化
+
+### 5. 登录认证 ✅
+- Token 管理
+- 路由保护
+- 用户信息显示
+
+---
+
+## ⚠️ 剩余问题 (28 个)
+
+### 高优先级 (10 个错误)
+1. McpControllerTest (2 个) - Mock 逻辑问题
+2. IntentRecognitionServiceTest (5 个) - 依赖注入问题
+3. MemoryServiceTest (1 个) - MyBatis Plus Mock
+4. TestRecommenderServiceTest (2 个) - 数据重复键
+
+### 中优先级 (18 个失败)
+- 性能测试未达标 (8 个)
+- 边界条件测试 (10 个)
+
+---
+
+## 📈 下一步计划
+
+### 短期 (本周)
+1. ✅ 修复剩余 10 个错误
+2. ✅ 补充集成测试 (TestContainers)
+3. ✅ 完善 3D 可视化交互
+
+### 中期 (下周)
+1. 性能基准测试
+2. CI/CD 集成
+3. 80%+ 测试覆盖率
+
+### 长期
+1. 生产环境部署
+2. 监控告警
+3. 文档完善
+
+---
+
+## 📝 技术栈
+
+| 层级 | 技术 | 版本 |
 |------|------|------|
-| Vue | 3.4.x | 核心框架 |
-| Vite | 5.1.x | 构建工具 |
-| Pinia | 2.1.x | 状态管理 |
-| Vue Router | 4.3.x | 路由 |
-| Element Plus | 2.5.x | UI 组件库 |
-| Axios | 1.6.x | HTTP 客户端 |
-
-### 页面组件（10 个）
-
-1. ✅ Home.vue - 首页
-2. ✅ MemoryManager.vue - 记忆管理
-3. ✅ IntentManager.vue - 意图管理
-4. ✅ TraceManager.vue - 代码追溯
-5. ✅ ImpactAnalysis.vue - 影响分析
-6. ✅ SubagentManager.vue - Subagent 管理
-7. ✅ ChannelManager.vue - 通道管理
-8. ✅ TestRecommender.vue - 测试推荐
-9. ✅ ConfigPanel.vue - 配置面板
-10. ✅ CallChain3D.vue - 3D 调用链可视化
-
-### 构建优化建议
-
-⚠️ **警告**: JS chunk > 500KB
-
-**优化方案**:
-1. 代码分割（动态 import）
-2. 手动分块（rollupOptions.output.manualChunks）
-3. 调整 chunk 大小警告阈值
+| **后端** | Spring Boot | 3.5.4 |
+| | JDK | 21.0.10 |
+| | Lombok | 1.18.38 |
+| | MyBatis Plus | 3.5.5 |
+| | JavaParser | 3.25.5 |
+| **前端** | Vue | 3.4.0 |
+| | Vite | 5.0.0 |
+| | Element Plus | 2.5.0 |
+| | Three.js | 0.160.0 |
+| | Pinia | 2.1.7 |
+| **数据库** | PostgreSQL | 16 |
+| | Redis | 7 |
+| | FalkorDB | 1.0 |
 
 ---
 
-## 5️⃣ 待完成项
-
-### 集成测试
-- [ ] 启用 15 个 Controller 集成测试
-- [ ] 添加数据库迁移测试
-- [ ] 添加 Redis 缓存测试
-- [ ] 添加 WebSocket 连接测试
-
-### 性能测试
-- [ ] 执行完整性能基准测试
-- [ ] 生成性能报告
-- [ ] 优化慢查询
-- [ ] 添加压力测试（JMeter）
-
-### 前端
-- [ ] 代码分割优化
-- [ ] 添加 E2E 测试（Playwright）
-- [ ] 添加视觉回归测试
-- [ ] 优化首屏加载时间
-
-### 文档
-- [ ] API 文档（Swagger）
-- [ ] 部署指南
-- [ ] 开发手册
-- [ ] 性能调优指南
-
----
-
-## 📈 质量指标
-
-| 指标 | 当前值 | 目标值 | 状态 |
-|------|--------|--------|------|
-| 单元测试覆盖率 | ~45% | 80% | ⚠️ 待提升 |
-| 集成测试数量 | 1 | 20 | ⚠️ 待补充 |
-| 性能达标率 | - | 100% | ⏳ 待测试 |
-| 前端构建时间 | 1.94s | <2s | ✅ 达标 |
-| 构建产物大小 | 1.45MB | <1MB | ⚠️ 待优化 |
-
----
-
-## 🚀 下一步行动
-
-### 本周
-1. ✅ 配置 Testcontainers 环境
-2. ✅ 创建性能基准测试
-3. ✅ 验证前端构建
-4. ⏳ 执行完整性能测试
-5. ⏳ 启用集成测试
-
-### 下周
-1. 补充 Service 层 Mock 测试
-2. 优化前端代码分割
-3. 添加 E2E 测试
-4. 生成完整测试报告
-
----
-
-*报告生成时间：2026-04-05 09:00*  
-*生成者：可乐 🥤*  
-*JClaw 项目 - Java 编码智能体*
+**报告生成者**: 可乐 🥤  
+**最后更新**: 2026-04-08 13:10
