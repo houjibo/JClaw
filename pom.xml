@@ -25,6 +25,19 @@
         <lombok.version>1.18.38</lombok.version>
         <mockito.version>5.11.0</mockito.version>
     </properties>
+    
+    <!-- 使用 JDK 21 编译 -->
+    <profiles>
+        <profile>
+            <id>jdk21</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <maven.compiler.release>21</maven.compiler.release>
+            </properties>
+        </profile>
+    </profiles>
 
     <!-- 覆盖 Spring Boot parent 的 Lombok 版本 -->
     <dependencyManagement>

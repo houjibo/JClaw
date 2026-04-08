@@ -70,9 +70,10 @@ const initScene = () => {
   animate()
 }
 
-// 创建节点几何体
+// 创建节点几何体 - 使用更简单的几何体提升性能
 const createNodeMesh = (node, type) => {
-  const geometry = new THREE.SphereGeometry(8, 32, 32)
+  // 使用较低多边数的球体提升性能
+  const geometry = new THREE.SphereGeometry(8, 16, 16)
   let color
   
   switch (type) {
@@ -160,8 +161,8 @@ const runForceLayout = () => {
     node.vz = 0
   })
   
-  // 运行模拟
-  for (let i = 0; i < 300; i++) {
+  // 运行模拟 - 减少迭代次数提升性能
+  for (let i = 0; i < 150; i++) {
     simulation(props.nodes)
     linkForce(props.links)
     centerForce(props.nodes)
@@ -195,12 +196,12 @@ const renderGraph = () => {
   })
 }
 
-// 动画循环
+// 动画循环 - 降低帧率提升性能
 const animate = () => {
   animationId = requestAnimationFrame(animate)
   
   if (nodes_group) {
-    nodes_group.rotation.y += 0.002
+    nodes_group.rotation.y += 0.001
   }
   
   renderer.render(scene, camera)
