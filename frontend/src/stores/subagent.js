@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { subagentApi } from '@/api'
+import { subagentApi } from '@/api/subagent'
 
 export const useSubagentStore = defineStore('subagent', () => {
   // 状态

@@ -96,7 +96,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { configApi } from '@/api'
+import { configApi } from '@/api/config'
 
 const activeTab = ref('basic')
 

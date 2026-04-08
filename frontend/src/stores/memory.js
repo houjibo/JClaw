@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { memoryApi } from '@/api'
+import { memoryApi } from '@/api/memory'
 
 export const useMemoryStore = defineStore('memory', () => {
   // 状态

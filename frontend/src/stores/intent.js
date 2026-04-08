@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { intentApi } from '@/api'
+import { intentApi } from '@/api/intent'
 
 export const useIntentStore = defineStore('intent', () => {
   // 状态

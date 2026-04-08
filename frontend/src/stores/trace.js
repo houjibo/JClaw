@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { traceApi } from '@/api'
+import { traceApi } from '@/api/trace'
 
 export const useTraceStore = defineStore('trace', () => {
   // 状态

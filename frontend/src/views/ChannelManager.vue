@@ -35,7 +35,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { channelApi } from '@/api'
+import { channelApi } from '@/api/channel'
 
 const channels = ref([])
 const showCreateDialog = ref(false)

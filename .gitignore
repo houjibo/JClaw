@@ -99,6 +99,9 @@ secrets.md
 frontend/node_modules/
 frontend/dist/
 
+# 静态资源 (构建产物)
+src/main/resources/static/
+
 # 测试报告
 test-results/
 surefire-reports/

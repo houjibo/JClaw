@@ -52,7 +52,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { testApi } from '@/api'
+import { testApi } from '@/api/test'
 
 const recommendations = ref([])
 const loading = ref(false)

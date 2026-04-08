@@ -75,7 +75,7 @@
 <script setup>
 import { ref } from 'vue'
 import CallChain3D from '@/components/CallChain3D.vue'
-import { traceApi } from '@/api'
+import { traceApi } from '@/api/trace'
 
 const filePath = ref('')
 const loading = ref(false)

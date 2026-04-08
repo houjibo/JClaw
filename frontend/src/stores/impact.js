@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { impactApi } from '@/api'
+import { impactApi } from '@/api/impact'
 
 export const useImpactStore = defineStore('impact', () => {
   // 状态
