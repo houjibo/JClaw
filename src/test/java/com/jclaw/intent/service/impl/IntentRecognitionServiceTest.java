@@ -1,5 +1,6 @@
 package com.jclaw.intent.service.impl;
 
+import com.jclaw.ai.service.AiIntentRecognitionService;
 import com.jclaw.intent.entity.Intent;
 import com.jclaw.intent.mapper.IntentMapper;
 import com.jclaw.intent.service.IntentRecognitionService;
@@ -25,6 +26,9 @@ class IntentRecognitionServiceTest {
     @Mock
     private IntentMapper intentMapper;
 
+    @Mock
+    private AiIntentRecognitionService aiIntentRecognitionService;
+
     @InjectMocks
     private IntentRecognitionServiceImpl intentService;
 
@@ -33,6 +37,8 @@ class IntentRecognitionServiceTest {
         // Arrange
         String userInput = "创建一个用户管理系统";
         when(intentMapper.insert(any(Intent.class))).thenReturn(1);
+        when(aiIntentRecognitionService.recognizeWithAI(userInput))
+            .thenReturn(Intent.builder().name("示例意图").build());
 
         // Act
         Intent result = intentService.recognize(userInput);
@@ -50,6 +56,10 @@ class IntentRecognitionServiceTest {
             .id("intent_001")
             .name("测试意图")
             .build();
+        
+        List<String> mockQuestions = List.of("请详细描述需求", "期望的功能是什么", "有什么特殊要求");
+        when(aiIntentRecognitionService.generateClarificationQuestions(intent))
+            .thenReturn(mockQuestions);
 
         // Act
         List<String> questions = intentService.generateClarificationQuestions(intent);

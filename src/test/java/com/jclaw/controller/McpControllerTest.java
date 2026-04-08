@@ -27,11 +27,6 @@ class McpControllerTest {
     @InjectMocks
     private McpController mcpController;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
-
     @Test
     @DisplayName("测试列出 MCP 服务器")
     void testListServers() {
@@ -177,34 +172,41 @@ class McpControllerTest {
     @DisplayName("测试读取 MCP 资源 - 成功")
     void testReadResource_Success() {
         // Arrange
-        when(mcpService.readResource("filesystem", "file:///etc/hosts"))
-            .thenReturn("127.0.0.1 localhost");
+        String serverName = "filesystem";
+        String uri = "file:///etc/hosts";
+        String mockContent = "127.0.0.1 localhost";
+        
+        when(mcpService.readResource(eq(serverName), eq(uri)))
+            .thenReturn(mockContent);
 
         // Act
-        Map<String, Object> result = mcpController.readResource("filesystem", "file:///etc/hosts");
+        Map<String, Object> result = mcpController.readResource(serverName, uri);
 
         // Assert
         assertTrue((Boolean) result.get("success"));
-        assertEquals("filesystem", result.get("server"));
-        assertEquals("file:///etc/hosts", result.get("uri"));
-        assertEquals("127.0.0.1 localhost", result.get("content"));
-        verify(mcpService, times(1)).readResource("filesystem", "file:///etc/hosts");
+        assertEquals(serverName, result.get("server"));
+        assertEquals(uri, result.get("uri"));
+        assertEquals(mockContent, result.get("content"));
+        verify(mcpService, times(1)).readResource(eq(serverName), eq(uri));
     }
 
     @Test
     @DisplayName("测试读取 MCP 资源 - 失败")
     void testReadResource_Failure() {
         // Arrange
-        when(mcpService.readResource(anyString(), anyString()))
+        String serverName = "filesystem";
+        String uri = "invalid-uri";
+        
+        when(mcpService.readResource(eq(serverName), eq(uri)))
             .thenThrow(new RuntimeException("资源不存在"));
 
         // Act
-        Map<String, Object> result = mcpController.readResource("filesystem", "invalid-uri");
+        Map<String, Object> result = mcpController.readResource(serverName, uri);
 
         // Assert
         assertFalse((Boolean) result.get("success"));
         assertTrue(((String) result.get("error")).contains("资源不存在"));
-        verify(mcpService, times(1)).readResource(anyString(), anyString());
+        verify(mcpService, times(1)).readResource(eq(serverName), eq(uri));
     }
 
     @Test

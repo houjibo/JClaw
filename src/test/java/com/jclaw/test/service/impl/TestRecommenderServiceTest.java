@@ -100,6 +100,7 @@ class TestRecommenderServiceTest {
         assertTrue(trend.containsKey("days"));
         assertTrue(trend.containsKey("trend"));
         assertTrue(trend.containsKey("currentCoverage"));
+        assertTrue(trend.containsKey("trendDirection"));
         
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> trendData = (List<Map<String, Object>>) trend.get("trend");
@@ -149,16 +150,17 @@ class TestRecommenderServiceTest {
     void testAnalyzeCoverage_EdgeCases() {
         // Arrange
         String emptyPath = "";
-        String nullPath = null;
 
-        // Act & Assert
+        // Act & Assert - 空路径应该返回错误信息
         assertDoesNotThrow(() -> {
-            testRecommenderService.analyzeCoverage(emptyPath);
+            Map<String, Object> result = testRecommenderService.analyzeCoverage(emptyPath);
+            assertNotNull(result);
+            assertTrue(result.containsKey("error"));
         });
         
-        // null 路径应该抛出异常或被处理
-        assertDoesNotThrow(() -> {
-            testRecommenderService.analyzeCoverage(nullPath);
-        });
+        // null 路径应该返回包含错误信息的 Map
+        Map<String, Object> nullResult = testRecommenderService.analyzeCoverage(null);
+        assertNotNull(nullResult);
+        assertTrue(nullResult.containsKey("error"));
     }
 }

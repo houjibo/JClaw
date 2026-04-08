@@ -1,5 +1,6 @@
 package com.jclaw.memory.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jclaw.memory.entity.Memory;
 import com.jclaw.memory.mapper.MemoryMapper;
 import com.jclaw.memory.service.impl.MemoryServiceImpl;
@@ -55,15 +56,22 @@ class MemoryServiceTest {
 
     @Test
     void testListMemories() {
-        // 由于 MyBatis-Plus 的 Page 类难以 mock，这里简化测试
-        // 直接测试返回值不为 null
-        when(memoryMapper.selectList(any())).thenReturn(Arrays.asList());
+        // Mock MyBatis-Plus 的 Page 查询
+        List<Memory> mockMemories = Arrays.asList();
+        
+        when(memoryMapper.selectPage(any(), any())).thenAnswer(invocation -> {
+            Page<Memory> page = invocation.getArgument(0);
+            page.setRecords(mockMemories);
+            page.setTotal(0);
+            return page;
+        });
         
         // 执行测试
         List<Memory> result = memoryService.listMemories(1, 10);
         
         // 验证结果（空列表也是有效结果）
         assertNotNull(result);
+        assertTrue(result.isEmpty());
     }
 
     @Test

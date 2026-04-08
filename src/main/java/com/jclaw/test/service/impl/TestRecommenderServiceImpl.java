@@ -46,6 +46,15 @@ public class TestRecommenderServiceImpl implements TestRecommenderService {
     public Map<String, Object> analyzeCoverage(String filePath) {
         log.info("分析代码覆盖率：{}", filePath);
         
+        // 处理 null 或空路径
+        if (filePath == null || filePath.isEmpty()) {
+            return Map.of(
+                "error", "文件路径不能为空",
+                "lineCoverage", 0.0,
+                "branchCoverage", 0.0
+            );
+        }
+        
         // 返回示例数据
         // 实际应集成 Jacoco 进行真实分析
         
@@ -151,7 +160,7 @@ public class TestRecommenderServiceImpl implements TestRecommenderService {
             "trend", trend,
             "currentCoverage", 75.5,
             "averageCoverage", 73.2,
-            "trend", "improving"
+            "trendDirection", "improving"
         );
     }
 
