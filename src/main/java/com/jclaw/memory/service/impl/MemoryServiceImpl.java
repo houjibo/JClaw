@@ -41,13 +41,24 @@ public class MemoryServiceImpl implements MemoryService {
 
     @Override
     public List<Memory> searchMemories(String query) {
-        // TODO: 实现 PostgreSQL 全文搜索
-        return memoryMapper.selectList(
-            new QueryWrapper<Memory>()
-                .like("title", query)
-                .or()
-                .like("content", query)
-        );
+        log.info("全文搜索记忆：{}", query);
+        
+        // 使用 PostgreSQL 全文搜索
+        List<Memory> results = memoryMapper.fullTextSearch(query);
+        
+        if (results.isEmpty()) {
+            log.warn("全文搜索无结果，回退到 LIKE 查询");
+            // 降级方案：使用 LIKE 查询
+            return memoryMapper.selectList(
+                new QueryWrapper<Memory>()
+                    .like("title", query)
+                    .or()
+                    .like("content", query)
+            );
+        }
+        
+        log.info("全文搜索找到 {} 条结果", results.size());
+        return results;
     }
 
     @Override

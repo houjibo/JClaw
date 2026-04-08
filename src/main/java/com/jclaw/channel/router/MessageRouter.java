@@ -23,6 +23,13 @@ public class MessageRouter implements MessageListener {
     private final Map<String, ChannelAdapter> adapterMap = new ConcurrentHashMap<>();
 
     /**
+     * 设置通道适配器列表（用于测试）
+     */
+    public void setChannelAdapters(List<ChannelAdapter> channelAdapters) {
+        this.channelAdapters = channelAdapters;
+    }
+
+    /**
      * 初始化通道
      */
     public void init() {

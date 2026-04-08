@@ -35,7 +35,7 @@ class MemoryServiceTest {
             .id("mem_001")
             .type("long_term")
             .title("测试记忆")
-            .content(Map.of("key", "value"))
+            .content("{\"key\":\"value\"}")
             .build();
         when(memoryMapper.selectById("mem_001")).thenReturn(mockMemory);
 
@@ -54,7 +54,7 @@ class MemoryServiceTest {
         Memory mockMemory = Memory.builder()
             .type("long_term")
             .title("新记忆")
-            .content(Map.of("key", "value"))
+            .content("{\"key\":\"value\"}")
             .build();
         when(memoryMapper.insert(any(Memory.class))).thenReturn(1);
 

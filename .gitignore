@@ -105,3 +105,4 @@ failsafe-reports/
 !mvnw
 !mvnw.cmd
 target/
+one-product-web/node_modules/

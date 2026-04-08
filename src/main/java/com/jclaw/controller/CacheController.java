@@ -1,64 +1,75 @@
 package com.jclaw.controller;
 
-import com.jclaw.services.CacheService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import com.jclaw.service.CacheService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 缓存控制器
- * 
- * 提供以下端点：
- * - GET /api/cache/stats - 缓存统计
- * - DELETE /api/cache - 清空缓存
- * - DELETE /api/cache/{key} - 删除指定缓存
+ * 缓存监控 API
  */
 @RestController
 @RequestMapping("/api/cache")
-@Tag(name = "缓存管理", description = "缓存服务管理")
+@Slf4j
 public class CacheController {
-    
-    private final CacheService cacheService;
-    
-    public CacheController(CacheService cacheService) {
-        this.cacheService = cacheService;
-    }
-    
+
+    @Autowired
+    private CacheService cacheService;
+
     /**
      * 获取缓存统计
      */
     @GetMapping("/stats")
-    @Operation(summary = "缓存统计", description = "获取所有缓存的统计信息")
-    public Map<String, Object> getStats() {
-        return cacheService.getStats();
+    public Map<String, Object> getCacheStats() {
+        Map<String, Object> result = new HashMap<>();
+        
+        String[] cacheNames = {"users", "intents", "memories", "codeUnits", "subsystems", "callChains"};
+        Map<String, Object> stats = new HashMap<>();
+        
+        for (String cacheName : cacheNames) {
+            CacheService.CacheStats cacheStats = cacheService.getStats(cacheName);
+            if (cacheStats != null) {
+                stats.put(cacheName, cacheStats);
+            }
+        }
+        
+        result.put("success", true);
+        result.put("data", stats);
+        return result;
     }
-    
+
+    /**
+     * 清空指定缓存
+     */
+    @PostMapping("/clear/{cacheName}")
+    public Map<String, Object> clearCache(@PathVariable String cacheName) {
+        log.info("清空缓存：{}", cacheName);
+        cacheService.clear(cacheName);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("message", "缓存已清空：" + cacheName);
+        return result;
+    }
+
     /**
      * 清空所有缓存
      */
-    @DeleteMapping
-    @Operation(summary = "清空缓存", description = "清空所有缓存数据")
-    public Map<String, Object> invalidateAll() {
-        cacheService.invalidateAll();
-        return Map.of(
-            "success", true,
-            "message", "已清空所有缓存"
-        );
-    }
-    
-    /**
-     * 删除指定缓存
-     */
-    @DeleteMapping("/{key}")
-    @Operation(summary = "删除缓存", description = "删除指定 key 的缓存")
-    public Map<String, Object> invalidate(@PathVariable String key) {
-        cacheService.invalidate(key);
-        return Map.of(
-            "success", true,
-            "key", key,
-            "message", "缓存已删除"
-        );
+    @PostMapping("/clear/all")
+    public Map<String, Object> clearAllCaches() {
+        log.info("清空所有缓存");
+        
+        String[] cacheNames = {"users", "intents", "memories", "codeUnits", "subsystems", "callChains"};
+        for (String cacheName : cacheNames) {
+            cacheService.clear(cacheName);
+        }
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("message", "所有缓存已清空");
+        return result;
     }
 }

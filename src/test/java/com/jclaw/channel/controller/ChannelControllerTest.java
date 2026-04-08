@@ -1,47 +1,95 @@
 package com.jclaw.channel.controller;
 
+import com.jclaw.common.entity.Result;
 import com.jclaw.channel.router.MessageRouter;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
+import org.mockito.*;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 /**
- * 通道控制器集成测试
+ * ChannelController 单元测试
  */
-@WebMvcTest(ChannelController.class)
+@DisplayName("ChannelController 单元测试")
 class ChannelControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
+    @Mock
     private MessageRouter messageRouter;
 
-    @Test
-    void testListChannels() throws Exception {
-        mockMvc.perform(get("/api/channels"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.data").isArray());
+    @InjectMocks
+    private ChannelController channelController;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void testSendToChannel() throws Exception {
-        mockMvc.perform(post("/api/channels/feishu/send")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"target\":\"user1\",\"content\":\"test\"}"))
-            .andExpect(status().isOk());
+    @DisplayName("测试列出所有通道")
+    void testListChannels() {
+        // Arrange
+        List<String> mockChannels = Arrays.asList("feishu", "qq", "discord");
+        when(messageRouter.getChannels()).thenReturn(mockChannels);
+
+        // Act
+        Result<List<String>> result = channelController.listChannels();
+
+        // Assert
+        assertTrue(result.isSuccess());
+        assertEquals(3, result.getData().size());
+        verify(messageRouter, times(1)).getChannels();
     }
 
     @Test
-    void testBroadcast() throws Exception {
-        mockMvc.perform(post("/api/channels/broadcast")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"content\":\"broadcast test\"}"))
-            .andExpect(status().isOk());
+    @DisplayName("测试发送消息到指定通道 - 成功")
+    void testSendToChannel_Success() {
+        // Arrange
+        Map<String, String> request = new HashMap<>();
+        request.put("target", "user-123");
+        request.put("content", "Hello World");
+        
+        doNothing().when(messageRouter).sendToChannel("discord", "user-123", "Hello World");
+
+        // Act
+        Result<Void> result = channelController.sendToChannel("discord", request);
+
+        // Assert
+        assertTrue(result.isSuccess());
+        verify(messageRouter, times(1)).sendToChannel("discord", "user-123", "Hello World");
+    }
+
+    @Test
+    @DisplayName("测试广播消息")
+    void testBroadcast() {
+        // Arrange
+        Map<String, String> request = new HashMap<>();
+        request.put("content", "Broadcast message");
+        
+        doNothing().when(messageRouter).broadcast("Broadcast message");
+
+        // Act
+        Result<Void> result = channelController.broadcast(request);
+
+        // Assert
+        assertTrue(result.isSuccess());
+        verify(messageRouter, times(1)).broadcast("Broadcast message");
+    }
+
+    @Test
+    @DisplayName("测试获取通道状态")
+    void testGetChannelStatus() {
+        // Act
+        Result<Map<String, Object>> result = channelController.getChannelStatus("discord");
+
+        // Assert
+        assertTrue(result.isSuccess());
+        assertEquals("discord", result.getData().get("name"));
+        assertTrue((Boolean) result.getData().get("connected"));
     }
 }

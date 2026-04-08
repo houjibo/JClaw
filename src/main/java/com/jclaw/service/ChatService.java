@@ -44,6 +44,14 @@ public class ChatService {
         String message = request.getMessage();
         String model = request.getModel() != null ? request.getModel() : DEFAULT_MODEL;
         
+        // 处理 null 值，避免 NPE
+        if (userId == null) {
+            userId = "anonymous";
+        }
+        if (message == null) {
+            message = "";
+        }
+        
         log.info("处理聊天请求：userId={}, model={}", userId, model);
         
         try {
@@ -136,6 +144,9 @@ public class ChatService {
      * 演示模式：根据关键词生成回复
      */
     private String generateDemoReply(String message) {
+        if (message == null || message.isEmpty()) {
+            return "我收到了你的消息。\n\n（演示模式：这是一个自动回复。实际部署后会接入真实的大模型 API，如 Qwen、Kimi 等，提供智能对话能力。）";
+        }
         String msg = message.toLowerCase();
         
         if (msg.contains("你好") || msg.contains("hello")) {
@@ -154,7 +165,7 @@ public class ChatService {
             return "Agent 管理页面可以查看和管理所有智能体的状态。当前有 5 个 Agent 在线运行，分别是：PM-QA、Architect、FullStack、DevOps、Analyst。";
         }
         
-        if (msg.contains("通道") || msg.contains("消息")) {
+        if (msg.contains("通道") || msg.contains("频道")) {
             return "通道管理支持飞书、QQBot 等多个平台。你可以在这里发送消息或广播通知。目前已注册 5 个通道。";
         }
         
@@ -193,7 +204,7 @@ public class ChatService {
      */
     public List<ChatResponse> getHistory(String userId, int limit) {
         List<ChatResponse> history = conversationHistory.get(userId);
-        if (history == null) {
+        if (history == null || history.isEmpty()) {
             return new ArrayList<>();
         }
         

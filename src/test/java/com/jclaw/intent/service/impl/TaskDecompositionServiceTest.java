@@ -38,14 +38,17 @@ class TaskDecompositionServiceTest {
 
     @Test
     void testEstimateComplexity() {
+        // 使用英文描述确保长度计算准确（每个字符算 1）
         Map<String, Object> task = Map.of(
-            "description", "这是一个非常复杂的任务需要很多时间",
+            "description", "This is a very complex task that requires a lot of time and effort to implement properly with multiple modules",
             "type", "coding"
         );
 
         int complexity = taskDecompositionService.estimateComplexity(task);
-
-        assertTrue(complexity > 0);
+        
+        // 描述长度 108 字符，108/50 = 2，coding 类型 multiplier=2，2*2=4
+        assertTrue(complexity > 0, "Complexity should be > 0, but was: " + complexity);
+        assertEquals(4, complexity);
     }
 
     @Test

@@ -32,8 +32,8 @@ public class Intent {
     /** 意图描述 */
     private String description;
     
-    /** 上下文数据 (JSON) */
-    private Map<String, Object> context;
+    /** 上下文数据 (JSON 字符串) */
+    private String context;
     
     /** 状态 */
     private String status;

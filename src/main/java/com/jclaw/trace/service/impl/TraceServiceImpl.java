@@ -7,8 +7,11 @@ import com.jclaw.trace.mapper.CodeUnitMapper;
 import com.jclaw.trace.mapper.CallRelationshipMapper;
 import com.jclaw.trace.service.TraceService;
 import com.jclaw.trace.service.ImpactAnalysis;
+import com.jclaw.trace.service.impl.AstParserServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -27,20 +30,27 @@ public class TraceServiceImpl implements TraceService {
 
     @Autowired
     private CallRelationshipMapper callRelationshipMapper;
+    
+    @Autowired
+    private AstParserServiceImpl astParserService;
 
     @Override
     public CodeUnit parseCodeFile(String filePath) {
         log.info("解析代码文件：{}", filePath);
-        // TODO: 集成 AST 解析器
-        return CodeUnit.builder()
-            .filePath(filePath)
-            .unitType("class")
-            .unitName("ExampleClass")
-            .build();
+        
+        // 使用 JavaParser AST 解析器
+        if (filePath.endsWith(".java")) {
+            return astParserService.parseJavaFile(filePath);
+        } else {
+            log.warn("不支持的文件类型：{}", filePath);
+            return null;
+        }
     }
 
     @Override
+    @Cacheable(value = "callChains", key = "#codeUnitId", unless = "#result == null or #result.isEmpty()")
     public List<CallRelationship> getCallChain(String codeUnitId) {
+        log.debug("查询调用链：{} (从数据库)", codeUnitId);
         // 递归查询调用链
         List<CallRelationship> result = new ArrayList<>();
         findCallChain(codeUnitId, result);
@@ -75,7 +85,9 @@ public class TraceServiceImpl implements TraceService {
     }
 
     @Override
+    @Cacheable(value = "codeUnits", key = "#id", unless = "#result == null")
     public CodeUnit getCodeUnit(String id) {
+        log.debug("查询代码单元：{} (从数据库)", id);
         return codeUnitMapper.selectById(id);
     }
 

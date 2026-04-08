@@ -26,8 +26,8 @@ public class Memory {
     /** 记忆标题 */
     private String title;
     
-    /** 记忆内容（JSON） */
-    private Map<String, Object> content;
+    /** 记忆内容（JSON 字符串） */
+    private String content;
     
     /** 标签 */
     private String[] tags;

@@ -22,4 +22,14 @@ public interface TestRecommenderService {
      * 生成测试用例建议
      */
     List<Map<String, Object>> generateTestSuggestions(String codeUnitId);
+    
+    /**
+     * 从 Jacoco 报告分析覆盖率
+     */
+    Map<String, Object> analyzeCoverageFromJacocoReport(String reportPath);
+    
+    /**
+     * 获取覆盖率趋势
+     */
+    Map<String, Object> getCoverageTrend(String projectId, int days);
 }

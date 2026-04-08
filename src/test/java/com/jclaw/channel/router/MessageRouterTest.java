@@ -27,6 +27,8 @@ class MessageRouterTest {
     @Test
     void testGetChannels() {
         when(channelAdapter.getName()).thenReturn("test");
+        // 手动初始化 channelAdapters 列表
+        messageRouter.setChannelAdapters(List.of(channelAdapter));
         messageRouter.init();
 
         List<String> channels = messageRouter.getChannels();
@@ -39,6 +41,7 @@ class MessageRouterTest {
     void testSendToChannel() {
         when(channelAdapter.getName()).thenReturn("test");
         when(channelAdapter.isConnected()).thenReturn(true);
+        messageRouter.setChannelAdapters(List.of(channelAdapter));
         messageRouter.init();
 
         assertDoesNotThrow(() -> {
@@ -50,6 +53,7 @@ class MessageRouterTest {
     void testBroadcast() {
         when(channelAdapter.getName()).thenReturn("test");
         when(channelAdapter.isConnected()).thenReturn(true);
+        messageRouter.setChannelAdapters(List.of(channelAdapter));
         messageRouter.init();
 
         assertDoesNotThrow(() -> {
