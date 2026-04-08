@@ -1,9 +1,11 @@
 package com.jclaw.trace.service.impl;
 
 import com.jclaw.trace.entity.CodeUnit;
+import com.jclaw.trace.mapper.CodeUnitMapper;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -13,6 +15,8 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 
 /**
  * AST 解析服务测试（JavaParser 集成）
@@ -24,11 +28,20 @@ class AstParserServiceTest {
     @Autowired
     private AstParserServiceImpl astParserService;
 
+    @MockBean
+    private CodeUnitMapper codeUnitMapper;
+
     private Path tempDir;
 
     @BeforeEach
     void setUp() throws IOException {
         tempDir = Files.createTempDirectory("ast-test");
+        // Mock codeUnitMapper.insert 行为
+        doAnswer(invocation -> {
+            CodeUnit unit = invocation.getArgument(0);
+            unit.setId("mock_" + System.currentTimeMillis());
+            return null;
+        }).when(codeUnitMapper).insert(any(CodeUnit.class));
         System.out.println("创建临时目录：" + tempDir);
     }
 

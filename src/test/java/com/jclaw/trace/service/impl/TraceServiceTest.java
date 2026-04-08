@@ -29,12 +29,23 @@ class TraceServiceTest {
     @Mock
     private CallRelationshipMapper callRelationshipMapper;
 
+    @Mock
+    private AstParserServiceImpl astParserService;
+
     @InjectMocks
     private TraceServiceImpl traceService;
 
     @Test
     void testParseCodeFile() {
         String filePath = "/src/main/java/Test.java";
+        
+        // Mock AstParserService 的行为
+        CodeUnit mockUnit = CodeUnit.builder()
+            .filePath(filePath)
+            .unitName("Test")
+            .unitType("CLASS")
+            .build();
+        when(astParserService.parseJavaFile(filePath)).thenReturn(mockUnit);
 
         CodeUnit result = traceService.parseCodeFile(filePath);
 

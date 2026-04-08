@@ -15,8 +15,10 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 代码追溯服务实现
@@ -53,18 +55,25 @@ public class TraceServiceImpl implements TraceService {
         log.debug("查询调用链：{} (从数据库)", codeUnitId);
         // 递归查询调用链
         List<CallRelationship> result = new ArrayList<>();
-        findCallChain(codeUnitId, result);
+        Set<String> visited = new HashSet<>();
+        findCallChain(codeUnitId, result, visited);
         return result;
     }
 
-    private void findCallChain(String codeUnitId, List<CallRelationship> result) {
+    private void findCallChain(String codeUnitId, List<CallRelationship> result, Set<String> visited) {
+        // 防止循环调用
+        if (visited.contains(codeUnitId)) {
+            return;
+        }
+        visited.add(codeUnitId);
+        
         List<CallRelationship> calls = callRelationshipMapper.selectList(
             new QueryWrapper<CallRelationship>().eq("caller_id", codeUnitId)
         );
         
         for (CallRelationship call : calls) {
             result.add(call);
-            findCallChain(call.getCalleeId(), result);
+            findCallChain(call.getCalleeId(), result, visited);
         }
     }
 
