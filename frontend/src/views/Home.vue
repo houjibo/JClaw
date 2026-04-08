@@ -59,16 +59,79 @@
         </el-card>
       </el-col>
     </el-row>
+    
+    <!-- Subagent 任务统计 -->
+    <el-row :gutter="20" style="margin-top: 20px">
+      <el-col :span="24">
+        <el-card>
+          <template #header>
+            <div class="card-header">
+              <span>🤖 Subagent 任务</span>
+              <el-button type="primary" size="small" icon="Plus" @click="showCreateTask = true">新建任务</el-button>
+            </div>
+          </template>
+          <el-table :data="subagentStore.tasks" stripe v-loading="subagentStore.loading">
+            <el-table-column prop="id" label="任务 ID" width="180" />
+            <el-table-column prop="role" label="角色" width="120">
+              <template #default="{ row }">
+                <el-tag>{{ row.role }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="status" label="状态" width="100">
+              <template #default="{ row }">
+                <el-tag :type="getStatusType(row.status)">{{ row.status }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="created_at" label="创建时间" width="180" />
+            <el-table-column label="操作" width="180">
+              <template #default="{ row }">
+                <el-button size="small" icon="View">查看</el-button>
+                <el-button v-if="row.status === 'running'" size="small" type="danger" icon="CircleClose" @click="handleCancelTask(row.id)">取消</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-card>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
 <script setup>
-const stats = [
-  { title: '记忆条目', value: '1,234', icon: 'Document', color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
+import { ref, onMounted, computed } from 'vue'
+import { useSubagentStore } from '@/stores/subagent'
+
+const subagentStore = useSubagentStore()
+const showCreateTask = ref(false)
+
+const stats = computed(() => [
+  { title: '记忆条目', value: subagentStore.tasks.length, icon: 'Document', color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
   { title: '意图任务', value: '56', icon: 'Aim', color: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
   { title: '代码单元', value: '2,890', icon: 'Connection', color: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' },
-  { title: 'Subagent', value: '12', icon: 'User', color: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' }
-]
+  { title: 'Subagent', value: subagentStore.stats.running, icon: 'User', color: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' }
+])
+
+const getStatusType = (status) => {
+  const types = {
+    running: 'warning',
+    completed: 'success',
+    failed: 'danger',
+    pending: 'info'
+  }
+  return types[status] || 'info'
+}
+
+const handleCancelTask = async (taskId) => {
+  try {
+    await subagentStore.cancelTask(taskId)
+    await subagentStore.fetchTasks()
+  } catch (error) {
+    console.error('取消任务失败:', error)
+  }
+}
+
+onMounted(() => {
+  subagentStore.fetchTasks()
+})
 </script>
 
 <style scoped>

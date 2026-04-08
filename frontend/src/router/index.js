@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
+import Login from '../views/Login.vue'
 import MemoryManager from '../views/MemoryManager.vue'
 import IntentManager from '../views/IntentManager.vue'
 import TraceManager from '../views/TraceManager.vue'
@@ -8,58 +9,103 @@ import SubagentManager from '../views/SubagentManager.vue'
 import ChannelManager from '../views/ChannelManager.vue'
 import TestRecommender from '../views/TestRecommender.vue'
 import ConfigPanel from '../views/ConfigPanel.vue'
+import CallChain3D from '../views/CallChain3D.vue'
 
 const routes = [
   {
+    path: '/login',
+    name: 'Login',
+    component: Login,
+    meta: { requiresAuth: false }
+  },
+  {
     path: '/',
     name: 'Home',
-    component: Home
+    component: Home,
+    meta: { requiresAuth: true }
   },
   {
     path: '/memory',
     name: 'Memory',
-    component: MemoryManager
+    component: MemoryManager,
+    meta: { requiresAuth: true }
   },
   {
     path: '/intent',
     name: 'Intent',
-    component: IntentManager
+    component: IntentManager,
+    meta: { requiresAuth: true }
   },
   {
     path: '/trace',
     name: 'Trace',
-    component: TraceManager
+    component: TraceManager,
+    meta: { requiresAuth: true }
   },
   {
     path: '/impact',
     name: 'Impact',
-    component: ImpactAnalysis
+    component: ImpactAnalysis,
+    meta: { requiresAuth: true }
   },
   {
     path: '/subagent',
     name: 'Subagent',
-    component: SubagentManager
+    component: SubagentManager,
+    meta: { requiresAuth: true }
   },
   {
     path: '/channel',
     name: 'Channel',
-    component: ChannelManager
+    component: ChannelManager,
+    meta: { requiresAuth: true }
   },
   {
     path: '/test',
     name: 'Test',
-    component: TestRecommender
+    component: TestRecommender,
+    meta: { requiresAuth: true }
   },
   {
     path: '/config',
     name: 'Config',
-    component: ConfigPanel
+    component: ConfigPanel,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/trace-3d',
+    name: 'Trace3D',
+    component: CallChain3D,
+    meta: { requiresAuth: true }
   }
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   routes
+})
+
+// 路由守卫
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('jclaw_token')
+  
+  if (to.meta.requiresAuth === false) {
+    // 登录页面，如果已登录则跳转到首页
+    if (token) {
+      next('/')
+    } else {
+      next()
+    }
+  } else if (to.meta.requiresAuth) {
+    // 需要认证的页面
+    if (token) {
+      next()
+    } else {
+      next('/login')
+    }
+  } else {
+    next()
+  }
 })
 
 export default router

@@ -60,6 +60,18 @@
             <h2>{{ pageTitle }}</h2>
             <div class="user-info">
               <el-tag type="success" size="small">v1.0.0</el-tag>
+              <el-dropdown @command="handleCommand">
+                <span class="user-name">
+                  <el-icon><User /></el-icon>
+                  {{ userStore.userName || '用户' }}
+                </span>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item command="profile">个人中心</el-dropdown-item>
+                    <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
             </div>
           </div>
         </el-header>
@@ -73,9 +85,14 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useRoute } from 'vue-router'
+import { useUserStore } from '@/stores/user'
+import { ElMessage } from 'element-plus'
 
+const router = useRouter()
 const route = useRoute()
+const userStore = useUserStore()
 
 const activeMenu = computed(() => route.path)
 
@@ -93,6 +110,16 @@ const pageTitle = computed(() => {
   }
   return titles[route.path] || 'JClaw'
 })
+
+const handleCommand = (command) => {
+  if (command === 'logout') {
+    userStore.logout()
+    ElMessage.success('已退出登录')
+    router.push('/login')
+  } else if (command === 'profile') {
+    router.push('/config')
+  }
+}
 </script>
 
 <style scoped>
@@ -145,6 +172,24 @@ const pageTitle = computed(() => {
 .header-content h2 {
   margin: 0;
   font-size: 20px;
+  color: #00d9ff;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.user-name {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  color: #e0e0e0;
+}
+
+.user-name:hover {
   color: #00d9ff;
 }
 
