@@ -1,66 +1,84 @@
 package com.jclaw.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.Instant;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 /**
- * 健康检查控制器
- * 
- * 提供以下端点：
- * - GET /api/health - 健康状态
- * - GET /api/health/ready - 就绪状态
- * - GET /api/health/live - 存活状态
+ * 系统健康检查 REST API 控制器
  */
+@Slf4j
 @RestController
-@RequestMapping("/api/health")
-@Tag(name = "健康检查", description = "服务健康状态监控")
+@RequestMapping("/api")
+@RequiredArgsConstructor
 public class HealthController {
     
     /**
      * 健康检查
      */
-    @GetMapping
-    @Operation(summary = "健康检查", description = "检查服务整体健康状态")
-    public Map<String, Object> health() {
-        return Map.of(
-            "status", "UP",
-            "timestamp", Instant.now().toString(),
-            "version", "1.0.0",
-            "components", Map.of(
-                "database", "UP",
-                "cache", "UP",
-                "api", "UP"
-            )
-        );
+    @GetMapping("/health")
+    public ResponseEntity<HealthStatus> health() {
+        RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
+        
+        HealthStatus status = new HealthStatus();
+        status.setStatus("UP");
+        status.setTimestamp(LocalDateTime.now());
+        status.setUptime(runtime.getUptime() / 1000); // 秒
+        status.setStartTime(runtime.getStartTime());
+        
+        return ResponseEntity.ok(status);
     }
     
     /**
-     * 就绪检查
+     * 系统信息
      */
-    @GetMapping("/ready")
-    @Operation(summary = "就绪检查", description = "检查服务是否准备好接收请求")
-    public Map<String, Object> ready() {
-        return Map.of(
-            "status", "READY",
-            "timestamp", Instant.now().toString()
-        );
+    @GetMapping("/system/info")
+    public ResponseEntity<SystemInfo> systemInfo() {
+        RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
+        
+        SystemInfo info = new SystemInfo();
+        info.setJavaVersion(System.getProperty("java.version"));
+        info.setJavaVendor(System.getProperty("java.vendor"));
+        info.setOsName(System.getProperty("os.name"));
+        info.setOsVersion(System.getProperty("os.version"));
+        info.setOsArch(System.getProperty("os.arch"));
+        info.setAvailableProcessors(Runtime.getRuntime().availableProcessors());
+        info.setMaxMemory(Runtime.getRuntime().maxMemory() / 1024 / 1024); // MB
+        info.setTotalMemory(Runtime.getRuntime().totalMemory() / 1024 / 1024); // MB
+        info.setFreeMemory(Runtime.getRuntime().freeMemory() / 1024 / 1024); // MB
+        info.setUptime(runtime.getUptime() / 1000); // 秒
+        
+        return ResponseEntity.ok(info);
     }
     
-    /**
-     * 存活检查
-     */
-    @GetMapping("/live")
-    @Operation(summary = "存活检查", description = "检查服务是否存活")
-    public Map<String, Object> live() {
-        return Map.of(
-            "status", "ALIVE",
-            "timestamp", Instant.now().toString()
-        );
+    @Data
+    public static class HealthStatus {
+        private String status;
+        private LocalDateTime timestamp;
+        private long uptime;
+        private long startTime;
+    }
+    
+    @Data
+    public static class SystemInfo {
+        private String javaVersion;
+        private String javaVendor;
+        private String osName;
+        private String osVersion;
+        private String osArch;
+        private int availableProcessors;
+        private long maxMemory;
+        private long totalMemory;
+        private long freeMemory;
+        private long uptime;
     }
 }
