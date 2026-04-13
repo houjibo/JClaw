@@ -53,9 +53,10 @@ jclaw:
     enabled: true
     feishu:
       enabled: false  # 默认关闭，需要时开启
-      app-id: ${FEISHU_APP_ID:}
-      app-secret: ${FEISHU_APP_SECRET:}
-      verification-token: ${FEISHU_VERIFICATION_TOKEN:}
+      app-id: ${FEISHU_APP_ID:}  # 飞书应用 App ID
+      app-secret: ${FEISHU_APP_SECRET:}  # 飞书应用 Secret
+      verification-token: ${FEISHU_VERIFICATION_TOKEN:}  # 飞书验证 Token
+      # 飞书回调地址：http://your-domain/api/channels/feishu/callback
   
   # 定时任务配置
   scheduler:
