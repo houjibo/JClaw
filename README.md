@@ -1,218 +1,275 @@
-# JClaw - Java 编码智能体
+# JClaw - AI 智能助手
 
+> **真正可用的 AI 助手** - 集成智谱 AI、飞书消息、技能系统
 
-## 🎯 设计理念
+---
 
-- **工具系统**: 43 个工具的 Java 实现
-- **命令系统**: 101 个命令的扩展框架
-- **MCP 协议**: Model Context Protocol 支持
-- **模块化**: 易于扩展和维护
+## 🚀 快速开始
+
+### 1. 环境要求
+- Java 17+
+- Maven 3.8+
+- （可选）PostgreSQL 14+
+- （可选）Redis 6+
+
+### 2. 配置 API Key
+
+```bash
+# 复制配置示例
+cp src/main/resources/application.yml.example application.yml
+
+# 编辑配置，填入智谱 AI API Key
+vim application.yml
+```
+
+配置智谱 AI：
+```yaml
+jclaw:
+  ai:
+    zhipu:
+      api-key: your-api-key-here  # 替换为你的 API Key
+```
+
+### 3. 编译
+
+```bash
+mvn clean package -DskipTests
+```
+
+### 4. 启动
+
+```bash
+# 方式 1：使用启动脚本
+chmod +x jclaw
+./jclaw start
+
+# 方式 2：直接运行
+java -jar target/jclaw-1.0.0.jar
+```
+
+### 5. 验证
+
+```bash
+# 检查状态
+./jclaw status
+
+# 查看日志
+tail -f logs/jclaw.log
+```
+
+---
+
+## 💬 使用示例
+
+### 简单对话
+
+```java
+@Autowired
+private AiService aiService;
+
+String response = aiService.chat("你好，请介绍一下自己");
+System.out.println(response);
+```
+
+### 使用技能
+
+```java
+@Autowired
+private SkillEngine skillEngine;
+
+// 读取文件
+SkillResult result = skillEngine.execute("file_read", Map.of(
+    "path", "/path/to/file.txt"
+));
+
+// 执行命令
+SkillResult cmdResult = skillEngine.execute("bash", Map.of(
+    "command", "ls -la"
+));
+```
+
+### 记忆系统
+
+```java
+@Autowired
+private MemoryService memoryService;
+
+// 保存记忆
+memoryService.save("用户喜欢喝可乐");
+
+// 搜索记忆
+String info = memoryService.search("用户喜好");
+```
+
+---
 
 ## 📁 项目结构
 
 ```
-jclaw/
+JClaw/
 ├── src/main/java/com/jclaw/
-│   ├── JClawApplication.java     # 主应用入口
-│   ├── core/                      # 核心抽象
-│   │   ├── Tool.java             # 工具基类
-│   │   ├── ToolRegistry.java     # 工具注册表
-│   │   ├── ToolResult.java       # 执行结果
-│   │   ├── ToolContext.java      # 执行上下文
-│   │   └── ToolCategory.java     # 工具分类
-│   ├── tools/                     # 工具实现
-│   │   ├── FileReadTool.java     # 文件读取
-│   │   ├── FileWriteTool.java    # 文件写入
-│   │   ├── GrepTool.java         # 代码搜索
-│   │   ├── BashTool.java         # 命令执行
-│   │   ├── GitTool.java          # Git 操作
-│   │   ├── McpTool.java          # MCP 协议
-│   │   ├── WebSearchTool.java    # 网络搜索
-│   │   ├── GlobTool.java         # 文件匹配
-│   │   └── TodoWriteTool.java    # TODO 管理
-│   ├── controller/                # REST 控制器
-│   │   └── ToolController.java    # 工具 API
-│   └── config/                    # 配置类
-│       ├── WebSocketConfig.java   # WebSocket 配置
-│       └── WebSocketMessageHandler.java
-└── src/main/resources/
-    └── application.yml            # 配置文件
+│   ├── ai/              # AI 服务（智谱集成）
+│   ├── skills/          # 技能系统
+│   ├── memory/          # 记忆系统
+│   ├── channels/        # 消息通道
+│   ├── scheduler/       # 定时任务
+│   └── controller/      # REST API
+├── src/main/resources/
+│   ├── application.yml.example  # 配置示例
+│   └── db/migration/    # 数据库迁移
+├── jclaw                # 启动脚本
+└── README.md            # 本文档
 ```
-
-## 🛠️ 已实现工具（13 个）
-
-| 工具 | 分类 | 说明 |
-|------|------|------|
-| `file_read` | FILE | 读取文件内容，支持行范围和编码 |
-| `file_write` | FILE | 写入文件内容，自动创建目录 |
-| `file_edit` | FILE | **diff 补丁式编辑，精确修改** 🔥 |
-| `grep` | SEARCH | 代码搜索，支持正则表达式 |
-| `glob` | SEARCH | 文件匹配，支持 * 和 ** 通配符 |
-| `bash` | SYSTEM | 执行 Bash 命令，带安全检查 |
-| `git` | GIT | Git 操作（status/log/diff/branch） |
-| `web_search` | NETWORK | 网络搜索（DuckDuckGo） |
-| `web_fetch` | NETWORK | **网页抓取，提取文本内容** 🔥 |
-| `mcp` | MCP | MCP 协议调用，支持远程工具 |
-| `todo_write` | TASK | TODO 管理（create/update/delete/list） |
-| `task_create` | TASK | **创建任务，支持优先级和子任务** 🔥 |
-| `task_list` | TASK | **列出任务，支持状态/优先级过滤** 🔥 |
-
-## 🌐 REST API
-
-### 列出所有工具
-```bash
-curl http://localhost:8080/api/tools
-```
-
-### 获取工具详情
-```bash
-curl http://localhost:8080/api/tools/file_read
-```
-
-### 执行工具
-```bash
-curl http://localhost:8080/api/tools/file_read/execute \
-  -X POST \
-  -H "Content-Type: application/json" \
-  -d '{"path": "pom.xml"}'
-```
-
-### 健康检查
-```bash
-curl http://localhost:8080/api/health
-```
-
-## 🔌 WebSocket
-
-### 连接
-```javascript
-const ws = new WebSocket('ws://localhost:8080/ws');
-```
-
-### 执行工具
-```javascript
-ws.send(JSON.stringify({
-  toolName: 'file_read',
-  params: { path: 'pom.xml' },
-  sessionId: 'session-123'
-}));
-```
-
-### 接收响应
-```javascript
-ws.onmessage = (event) => {
-  const response = JSON.parse(event.data);
-  console.log(response);
-};
-```
-
-## 🚀 快速开始
-
-### 环境要求
-- JDK 21+
-- Maven 3.8+
-
-### 构建
-```bash
-cd ~/.openclaw/workspace/projects/code/core/JClaw
-mvn clean package
-```
-
-### 运行
-
-#### 方式 1：交互式 CLI（推荐）
-```bash
-mvn exec:java -Dexec.mainClass="com.jclaw.cli.JClawCli"
-```
-
-启动后进入交互式 REPL：
-```
-╔════════════════════════════════════════════════════════╗
-║  JClaw - Java 编码智能体                           ║
-║  版本：1.0.0                                      ║
-╚════════════════════════════════════════════════════════╝
-
-JClaw > commit
-JClaw > review
-JClaw > /help
-```
-
-#### 方式 2：Spring Boot 应用
-```bash
-mvn spring-boot:run
-```
-
-应用启动后访问：
-- REST API: http://localhost:8080/api
-- WebSocket: ws://localhost:8080/ws
-- Swagger UI: http://localhost:8080/swagger-ui.html
-
-## 📋 待实现功能
-
-### 工具扩展
-- [x] `file_edit` - 文件编辑（diff 补丁）✅
-- [x] `web_fetch` - 网页抓取 ✅
-- [x] `task_*` - 任务管理系列（create/list/update/stop）✅
-- [x] `notebook_edit` - Notebook 编辑 ✅
-- [x] `config` - 配置管理 ✅
-
-### 命令系统
-- [x] `commit` - Git 提交命令 ✅
-- [x] `review` - 代码审查命令 ✅
-- [x] `config` - 配置管理命令 ✅
-
-### 服务层
-- [x] MCP 客户端完整实现 ✅
-- [x] 多 Agent 协调器 ✅
-
-## 🔧 配置说明
-
-```yaml
-server:
-  port: 8080
-
-jclaw:
-  workspace: ${user.home}/.openclaw/workspace  # JClaw 工作目录
-  max-read-size: 10485760                       # 最大读取大小 (10MB)
-  allow-write: true                             # 允许写操作
-  allow-exec: true                              # 允许命令执行
-
-mcp:
-  enabled: true
-  servers:
-    - name: local
-      url: http://localhost:3000/mcp
-```
-
-
-|------|-------------|-------|
-| 语言 | TypeScript | Java |
-| 工具数量 | 43 | 9 ✅ |
-| 命令数量 | 101 | 0 (框架就绪) |
-| MCP 协议 | ✅ | ✅ |
-| Git 集成 | ✅ | ✅ |
-| REST API | ❌ | ✅ |
-| WebSocket | ✅ | ✅ |
-| 终端 UI | Ink | ✅ Picocli+JLine |
-| 多 Agent | ✅ | ✅ 已实现 |
-
-## 📝 开发计划
-
-| Phase | 内容 | 状态 | 代码量 |
-|-------|------|------|--------|
-| Phase 1 | 核心工具框架 | ✅ 完成 | ~5,000 行 |
-| Phase 2 | 完善工具集（46 个工具） | ✅ 完成 | ~15,000 行 |
-| Phase 3 | REST API + WebSocket | ✅ 完成 | ~3,000 行 |
-| Phase 4 | FileEditTool + Task 系统 | ✅ 完成 | ~2,000 行 |
-| Phase 5 | 命令系统实现（78 个命令） | ✅ 完成 | ~20,000 行 |
-| Phase 6 | MCP 深度集成 | ✅ 完成 | ~10,000 行 |
-| Phase 7 | 多 Agent 协调 | ✅ 完成 | ~10,000 行 |
-| **总计** | **全功能实现** | **✅ 100%** | **~65,000 行** |
-
-## 🎓 学习来源
-
-- 核心参考：`Tool.ts`, `tools/` 目录，`MCP` 服务
 
 ---
 
-*JClaw - 让 Java 开发更智能* 🤖
+## 🔧 核心功能
+
+### 1. AI 模型调用
+- ✅ 智谱 AI 集成（glm-4-flash）
+- ✅ 流式输出支持
+- ✅ 多模型 fallback
+
+### 2. 技能系统
+| 技能 | 功能 | 状态 |
+|------|------|------|
+| `file_read` | 读取文件 | ✅ |
+| `file_write` | 写入文件 | ✅ |
+| `file_edit` | 编辑文件 | ✅ |
+| `bash` | 执行命令 | ✅ |
+| `grep` | 搜索文本 | ✅ |
+| `glob` | 文件匹配 | ✅ |
+
+### 3. 记忆系统
+- ✅ MEMORY.md 读写
+- ✅ 每日日志自动创建
+- ✅ 语义搜索
+
+### 4. 消息通道
+- ✅ 飞书集成（待配置）
+- ✅ QQ 集成（待配置）
+
+### 5. REST API
+- 86 个端点（完整列表见 API 文档）
+
+---
+
+## 📝 配置说明
+
+### 必要配置
+
+```yaml
+# 智谱 AI API Key（必须）
+jclaw:
+  ai:
+    zhipu:
+      api-key: sk-xxx
+```
+
+### 可选配置
+
+```yaml
+# 数据库（用于持久化）
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/jclaw
+    username: jclaw
+    password: xxx
+
+# Redis（用于缓存）
+spring:
+  redis:
+    host: localhost
+    port: 6379
+
+# 飞书通道
+jclaw:
+  channels:
+    feishu:
+      enabled: true
+      app-id: xxx
+      app-secret: xxx
+```
+
+---
+
+## 🛠️ 开发指南
+
+### 添加新技能
+
+1. 创建技能类：
+```java
+@Service
+public class MySkill implements Skill {
+    @Override
+    public String getName() { return "my_skill"; }
+    
+    @Override
+    public SkillResult execute(Map<String, Object> params) {
+        // 实现技能逻辑
+    }
+}
+```
+
+2. 技能自动注册（通过 `@Service` 注解）
+
+### 调用 AI
+
+```java
+@Service
+public class MyService {
+    @Autowired
+    private AiService aiService;
+    
+    public void doSomething() {
+        String response = aiService.chat("请帮我...");
+    }
+}
+```
+
+---
+
+## 📊 监控
+
+### 健康检查
+
+```bash
+curl http://localhost:18790/actuator/health
+```
+
+### 查看日志
+
+```bash
+tail -f logs/jclaw.log
+```
+
+### 性能监控
+
+```bash
+curl http://localhost:18790/actuator/metrics
+```
+
+---
+
+## ❓ 常见问题
+
+### Q: API Key 在哪里获取？
+A: 访问 [智谱 AI 开放平台](https://open.bigmodel.cn/) 注册并创建 API Key
+
+### Q: 如何启用飞书消息？
+A: 在配置文件中设置 `jclaw.channels.feishu.enabled: true` 并填写 App ID 和 Secret
+
+### Q: 日志在哪里？
+A: `logs/jclaw.log`
+
+---
+
+## 📄 License
+
+MIT License
+
+---
+
+**版本**: v4.0.0  
+**更新日期**: 2026-04-13  
+**作者**: JClaw Team

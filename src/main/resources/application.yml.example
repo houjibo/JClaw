@@ -1,0 +1,77 @@
+# JClaw 配置文件示例
+# 复制此文件为 application.yml 并修改配置
+
+server:
+  port: 18790  # JClaw 默认端口
+
+spring:
+  application:
+    name: jclaw
+  
+  # 数据库配置（可选，用于持久化）
+  datasource:
+    url: jdbc:postgresql://localhost:5432/jclaw
+    username: jclaw
+    password: jclaw_password
+    driver-class-name: org.postgresql.Driver
+  
+  # Redis 配置（可选，用于缓存）
+  redis:
+    host: localhost
+    port: 6379
+    password: 
+
+# JClaw 核心配置
+jclaw:
+  # AI 模型配置
+  ai:
+    model: glm-4-flash  # 默认模型
+    default-model: glm-4-flash
+    fallback-models:
+      - glm-4-flash
+      - glm-3-turbo
+    
+    # 智谱 AI 配置
+    zhipu:
+      api-key: ${ZHIPU_API_KEY:your-api-key-here}  # 从环境变量读取
+      base-url: https://open.bigmodel.cn/api/paas/v4
+  
+  # 记忆系统配置
+  memory:
+    enabled: true
+    path: ${JCLAW_MEMORY_PATH:./memory}  # 记忆文件存储路径
+    daily-log-enabled: true
+  
+  # 技能系统配置
+  skills:
+    enabled: true
+    scan-packages:
+      - com.jclaw.skills
+  
+  # 消息通道配置
+  channels:
+    enabled: true
+    feishu:
+      enabled: false  # 默认关闭，需要时开启
+      app-id: ${FEISHU_APP_ID:}
+      app-secret: ${FEISHU_APP_SECRET:}
+      verification-token: ${FEISHU_VERIFICATION_TOKEN:}
+  
+  # 定时任务配置
+  scheduler:
+    enabled: true
+    cron-tasks: []
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.jclaw: DEBUG
+    org.springframework: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/jclaw.log
+    max-size: 10MB
+    max-history: 30
