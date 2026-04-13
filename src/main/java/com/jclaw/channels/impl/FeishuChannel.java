@@ -2,6 +2,7 @@ package com.jclaw.channels.impl;
 
 import com.jclaw.channels.ChannelMessage;
 import com.jclaw.channels.MessageChannel;
+import com.jclaw.channels.feishu.FeishuApiClient;
 import com.jclaw.skills.SkillEngine;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import java.util.function.Consumer;
 public class FeishuChannel implements MessageChannel {
     
     private final SkillEngine skillEngine;
+    private final FeishuApiClient feishuApiClient;
     
     @Value("${jclaw.channels.feishu.enabled:false}")
     private boolean enabled;
@@ -29,6 +31,9 @@ public class FeishuChannel implements MessageChannel {
     
     @Value("${jclaw.channels.feishu.app-secret:}")
     private String appSecret;
+    
+    @Value("${jclaw.channels.feishu.verification-token:}")
+    private String verificationToken;
     
     // 消息处理器
     private Consumer<ChannelMessage> messageHandler;
@@ -56,16 +61,20 @@ public class FeishuChannel implements MessageChannel {
         }
         
         try {
-            // TODO: 集成飞书 API 发送消息
-            // 目前先调用技能引擎发送
-            String apiPath = "oc_" + receiverId; // 飞书群聊 ID 格式
+            // 判断是群聊还是私聊
+            boolean isChatId = receiverId.startsWith("oc_");
             
-            log.info("发送飞书消息到：{} 内容：{}", apiPath, content);
+            log.info("发送飞书消息到：{} 类型：{}", receiverId, isChatId ? "群聊" : "私聊");
             
-            // 使用飞书 IM 工具发送（需要配置飞书插件）
-            // 这里先记录日志，实际发送需要飞书 API
+            boolean success = feishuApiClient.sendTextMessage(receiverId, content, isChatId);
             
-            return true;
+            if (success) {
+                log.info("飞书消息发送成功");
+            } else {
+                log.error("飞书消息发送失败");
+            }
+            
+            return success;
             
         } catch (Exception e) {
             log.error("发送飞书消息失败", e);
