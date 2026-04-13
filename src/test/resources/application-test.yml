@@ -1,0 +1,58 @@
+spring:
+  application:
+    name: jclaw-test
+  
+  # 测试数据库（H2 内存数据库）
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  # JPA/Hibernate 配置
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  
+  # 禁用自动配置
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+
+# JClaw 测试配置
+jclaw:
+  ai:
+    zhipu:
+      api-key: test-api-key
+    model: glm-4-flash
+  
+  memory:
+    enabled: true
+    path: ./memory-test
+    daily-log-enabled: true
+  
+  channels:
+    enabled: false
+    feishu:
+      enabled: false
+  
+  skills:
+    enabled: true
+    github:
+      token: test-github-token
+    qqbot:
+      api-url: http://localhost:8080
+      token: test-qqbot-token
+
+# 日志配置
+logging:
+  level:
+    root: WARN
+    com.jclaw: DEBUG
+    org.springframework: WARN
+  file:
+    name: logs/jclaw-test.log
