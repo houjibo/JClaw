@@ -1,170 +1,130 @@
 package com.jclaw.controller;
 
-import com.jclaw.services.PermissionTracker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.jclaw.security.PermissionService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
- * 权限追踪控制器
- * 
- * 提供以下端点：
- * - GET /api/permissions - 获取权限状态
- * - POST /api/permissions/{permission}/allow - 允许权限
- * - POST /api/permissions/{permission}/deny - 拒绝权限
- * - GET /api/permissions/denials - 列出拒绝记录
- * - POST /api/permissions/denials/clear - 清除拒绝记录
- * - GET /api/permissions/suggestion - 获取权限建议
+ * 权限管理 REST API 控制器
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/permissions")
+@RequiredArgsConstructor
 public class PermissionController {
     
-    private static final Logger logger = LoggerFactory.getLogger(PermissionController.class);
-    
-    private final PermissionTracker permissionTracker;
-    
-    public PermissionController(PermissionTracker permissionTracker) {
-        this.permissionTracker = permissionTracker;
-    }
-    
-    /**
-     * 获取权限状态
-     */
-    @GetMapping
-    public Map<String, Object> getPermissions() {
-        logger.info("获取权限状态");
-        PermissionTracker.UserPreferences prefs = permissionTracker.getPreferences();
-        
-        return Map.of(
-            "success", true,
-            "allowed", prefs.allowedPermissions,
-            "denied", prefs.deniedPermissions,
-            "usage", prefs.permissionUsage,
-            "lastUpdated", prefs.lastUpdated
-        );
-    }
-    
-    /**
-     * 允许权限
-     */
-    @PostMapping("/{permission}/allow")
-    public Map<String, Object> allowPermission(
-            @PathVariable String permission,
-            @RequestParam(required = false) String tool,
-            @RequestParam(required = false) String action) {
-        
-        logger.info("允许权限：{}", permission);
-        permissionTracker.recordAllow(permission, tool, action);
-        
-        return Map.of(
-            "success", true,
-            "permission", permission,
-            "status", "allowed"
-        );
-    }
-    
-    /**
-     * 拒绝权限
-     */
-    @PostMapping("/{permission}/deny")
-    public Map<String, Object> denyPermission(
-            @PathVariable String permission,
-            @RequestParam(required = false) String tool,
-            @RequestParam(required = false) String action,
-            @RequestBody(required = false) Map<String, String> body) {
-        
-        String reason = body != null ? body.get("reason") : null;
-        
-        logger.info("拒绝权限：{} - {}", permission, reason);
-        permissionTracker.recordDenial(permission, tool, action, reason);
-        
-        return Map.of(
-            "success", true,
-            "permission", permission,
-            "status", "denied"
-        );
-    }
+    private final PermissionService permissionService;
     
     /**
      * 检查权限
      */
-    @GetMapping("/{permission}/check")
-    public Map<String, Object> checkPermission(@PathVariable String permission) {
-        boolean allowed = permissionTracker.isPermissionAllowed(permission);
-        
-        return Map.of(
-            "success", true,
+    @GetMapping("/check")
+    public ResponseEntity<Map<String, Object>> checkPermission(
+            @RequestParam String user_id,
+            @RequestParam String permission) {
+        boolean hasPermission = permissionService.hasPermission(user_id, permission);
+        return ResponseEntity.ok(Map.of(
+            "user_id", user_id,
             "permission", permission,
-            "allowed", allowed
-        );
+            "has_permission", hasPermission
+        ));
     }
     
     /**
-     * 列出拒绝记录
+     * 获取用户权限列表
      */
-    @GetMapping("/denials")
-    public Map<String, Object> listDenials() {
-        logger.info("列出拒绝记录");
-        List<Map<String, Object>> denials = permissionTracker.listDenials();
-        
-        return Map.of(
-            "success", true,
-            "count", denials.size(),
-            "denials", denials
-        );
+    @GetMapping("/users/{userId}")
+    public ResponseEntity<Map<String, Object>> getUserPermissions(@PathVariable String userId) {
+        Set<String> permissions = permissionService.getUserPermissions(userId);
+        return ResponseEntity.ok(Map.of(
+            "user_id", userId,
+            "permissions", permissions
+        ));
     }
     
     /**
-     * 清除拒绝记录
+     * 创建用户
      */
-    @PostMapping("/denials/clear")
-    public Map<String, Object> clearDenials() {
-        logger.info("清除拒绝记录");
-        permissionTracker.clearDenials();
-        
-        return Map.of(
-            "success", true,
-            "message", "已清除所有拒绝记录"
+    @PostMapping("/users")
+    public ResponseEntity<PermissionService.User> createUser(@RequestBody CreateUserRequest request) {
+        PermissionService.User user = permissionService.createUser(
+            request.getUserId(),
+            request.getRoles()
         );
+        return ResponseEntity.ok(user);
     }
     
     /**
-     * 重置用户偏好
+     * 列出所有用户
      */
-    @PostMapping("/reset")
-    public Map<String, Object> resetPreferences() {
-        logger.info("重置用户偏好");
-        permissionTracker.resetPreferences();
-        
-        return Map.of(
-            "success", true,
-            "message", "已重置用户偏好"
-        );
+    @GetMapping("/users")
+    public ResponseEntity<List<PermissionService.User>> listUsers() {
+        return ResponseEntity.ok(permissionService.listUsers());
     }
     
     /**
-     * 获取权限建议
+     * 列出所有角色
      */
-    @GetMapping("/suggestion")
-    public Map<String, Object> getSuggestion(
-            @RequestParam String permission,
-            @RequestParam(required = false) String tool,
-            @RequestParam(required = false) String action) {
-        
-        logger.info("获取权限建议：{}", permission);
-        Map<String, Object> suggestion = permissionTracker.getPermissionSuggestion(
-            permission,
-            tool != null ? tool : "unknown",
-            action != null ? action : "unknown"
+    @GetMapping("/roles")
+    public ResponseEntity<List<PermissionService.Role>> listRoles() {
+        return ResponseEntity.ok(permissionService.listRoles());
+    }
+    
+    /**
+     * 添加角色
+     */
+    @PostMapping("/roles")
+    public ResponseEntity<PermissionService.Role> addRole(@RequestBody CreateRoleRequest request) {
+        PermissionService.Role role = permissionService.addRole(
+            request.getName(),
+            request.getPermissions()
         );
-        
-        return Map.of(
-            "success", true,
-            "suggestion", suggestion
-        );
+        return ResponseEntity.ok(role);
+    }
+    
+    /**
+     * 给用户添加角色
+     */
+    @PostMapping("/users/{userId}/roles/{roleName}")
+    public ResponseEntity<Map<String, String>> addUserRole(
+            @PathVariable String userId,
+            @PathVariable String roleName) {
+        permissionService.addUserRole(userId, roleName);
+        return ResponseEntity.ok(Map.of("status", "success"));
+    }
+    
+    /**
+     * 移除用户角色
+     */
+    @DeleteMapping("/users/{userId}/roles/{roleName}")
+    public ResponseEntity<Map<String, String>> removeUserRole(
+            @PathVariable String userId,
+            @PathVariable String roleName) {
+        permissionService.removeUserRole(userId, roleName);
+        return ResponseEntity.ok(Map.of("status", "success"));
+    }
+    
+    public static class CreateUserRequest {
+        private String userId;
+        private List<String> roles;
+        public String getUserId() { return userId; }
+        public void setUserId(String userId) { this.userId = userId; }
+        public List<String> getRoles() { return roles; }
+        public void setRoles(List<String> roles) { this.roles = roles; }
+    }
+    
+    public static class CreateRoleRequest {
+        private String name;
+        private Set<String> permissions;
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+        public Set<String> getPermissions() { return permissions; }
+        public void setPermissions(Set<String> permissions) { this.permissions = permissions; }
     }
 }
