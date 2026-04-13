@@ -1,98 +1,103 @@
 package com.jclaw.config;
 
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.annotation.Validated;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * JClaw 统一配置
+ * JClaw 配置属性
  */
+@Slf4j
+@Data
 @Component
 @ConfigurationProperties(prefix = "jclaw")
-@Validated
 public class JClawProperties {
     
     /**
-     * 工作目录
+     * AI 配置
      */
-    @NotBlank
-    private String workspace = System.getProperty("user.home") + "/.openclaw/workspace";
+    private AiConfig ai = new AiConfig();
     
     /**
-     * 最大读取大小（字节）
+     * 记忆系统配置
      */
-    @Min(1)
-    @Max(100 * 1024 * 1024)
-    private long maxReadSize = 10 * 1024 * 1024; // 10MB
+    private MemoryConfig memory = new MemoryConfig();
     
     /**
-     * 允许写操作
+     * 通道配置
      */
-    private boolean allowWrite = true;
+    private ChannelsConfig channels = new ChannelsConfig();
     
     /**
-     * 允许命令执行
+     * 技能配置
      */
-    private boolean allowExec = true;
+    private SkillsConfig skills = new SkillsConfig();
     
-    /**
-     * 启用缓存
-     */
-    private boolean cacheEnabled = true;
+    @PostConstruct
+    public void validate() {
+        log.info("JClaw 配置加载完成");
+        
+        // 验证必要配置
+        if (ai.getZhipu() == null || ai.getZhipu().getApiKey() == null || 
+            ai.getZhipu().getApiKey().isEmpty() || ai.getZhipu().getApiKey().equals("your-api-key-here")) {
+            log.warn("⚠️  智谱 AI API Key 未配置，AI 功能将不可用");
+            log.warn("   请在 application.yml 中配置 jclaw.ai.zhipu.api-key");
+        } else {
+            log.info("✅ 智谱 AI API Key 已配置");
+        }
+        
+        if (channels.getFeishu() != null && channels.getFeishu().isEnabled()) {
+            if (channels.getFeishu().getAppId() == null || channels.getFeishu().getAppId().isEmpty()) {
+                log.warn("⚠️  飞书通道已启用但 App ID 未配置");
+            }
+        }
+        
+        log.info("配置验证完成");
+    }
     
-    /**
-     * 缓存过期时间（分钟）
-     */
-    @Min(1)
-    @Max(60)
-    private int cacheExpireMinutes = 10;
+    @Data
+    public static class AiConfig {
+        private String model = "glm-4-flash";
+        private String defaultModel = "glm-4-flash";
+        private List<String> fallbackModels = new ArrayList<>();
+        private ZhipuConfig zhipu = new ZhipuConfig();
+    }
     
-    /**
-     * 启用 MCP
-     */
-    private boolean mcpEnabled = true;
+    @Data
+    public static class ZhipuConfig {
+        private String apiKey;
+        private String baseUrl = "https://open.bigmodel.cn/api/paas/v4";
+    }
     
-    /**
-     * 启用多 Agent
-     */
-    private boolean agentEnabled = true;
+    @Data
+    public static class MemoryConfig {
+        private boolean enabled = true;
+        private String path = "./memory";
+        private boolean dailyLogEnabled = true;
+    }
     
-    /**
-     * 流式输出超时（毫秒）
-     */
-    @Min(1000)
-    @Max(300000)
-    private long streamingTimeout = 30000; // 30 秒
+    @Data
+    public static class ChannelsConfig {
+        private boolean enabled = true;
+        private FeishuConfig feishu = new FeishuConfig();
+    }
     
-    // Getters and Setters
-    public String getWorkspace() { return workspace; }
-    public void setWorkspace(String workspace) { this.workspace = workspace; }
+    @Data
+    public static class FeishuConfig {
+        private boolean enabled = false;
+        private String appId;
+        private String appSecret;
+        private String verificationToken;
+    }
     
-    public long getMaxReadSize() { return maxReadSize; }
-    public void setMaxReadSize(long maxReadSize) { this.maxReadSize = maxReadSize; }
-    
-    public boolean isAllowWrite() { return allowWrite; }
-    public void setAllowWrite(boolean allowWrite) { this.allowWrite = allowWrite; }
-    
-    public boolean isAllowExec() { return allowExec; }
-    public void setAllowExec(boolean allowExec) { this.allowExec = allowExec; }
-    
-    public boolean isCacheEnabled() { return cacheEnabled; }
-    public void setCacheEnabled(boolean cacheEnabled) { this.cacheEnabled = cacheEnabled; }
-    
-    public int getCacheExpireMinutes() { return cacheExpireMinutes; }
-    public void setCacheExpireMinutes(int cacheExpireMinutes) { this.cacheExpireMinutes = cacheExpireMinutes; }
-    
-    public boolean isMcpEnabled() { return mcpEnabled; }
-    public void setMcpEnabled(boolean mcpEnabled) { this.mcpEnabled = mcpEnabled; }
-    
-    public boolean isAgentEnabled() { return agentEnabled; }
-    public void setAgentEnabled(boolean agentEnabled) { this.agentEnabled = agentEnabled; }
-    
-    public long getStreamingTimeout() { return streamingTimeout; }
-    public void setStreamingTimeout(long streamingTimeout) { this.streamingTimeout = streamingTimeout; }
+    @Data
+    public static class SkillsConfig {
+        private boolean enabled = true;
+        private List<String> scanPackages = new ArrayList<>();
+    }
 }

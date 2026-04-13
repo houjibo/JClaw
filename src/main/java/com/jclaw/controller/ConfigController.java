@@ -1,148 +1,76 @@
 package com.jclaw.controller;
 
-import com.jclaw.config.HotReloadConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.jclaw.config.JClawProperties;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 /**
- * 配置热重载控制器
- * 
- * 提供以下端点：
- * - GET /api/config - 获取所有配置
- * - GET /api/config/{key} - 获取指定配置
- * - PUT /api/config/{key} - 更新配置
- * - POST /api/config/reload - 重新加载配置
- * - GET /api/config/history - 列出历史版本
- * - POST /api/config/rollback - 回滚配置
+ * 配置 REST API 控制器
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/config")
+@RequiredArgsConstructor
 public class ConfigController {
     
-    private static final Logger logger = LoggerFactory.getLogger(ConfigController.class);
-    
-    private final HotReloadConfig hotReloadConfig;
-    
-    public ConfigController(HotReloadConfig hotReloadConfig) {
-        this.hotReloadConfig = hotReloadConfig;
-    }
+    private final JClawProperties jclawProperties;
     
     /**
-     * 获取所有配置
+     * 获取当前配置
      */
     @GetMapping
-    public Map<String, Object> getAllConfig() {
-        logger.info("获取所有配置");
-        return hotReloadConfig.getAllConfig();
-    }
-    
-    /**
-     * 获取指定配置
-     */
-    @GetMapping("/{key}")
-    public Map<String, Object> getConfig(@PathVariable String key) {
-        logger.info("获取配置：{}", key);
-        Object value = hotReloadConfig.get(key, null);
-        
-        if (value == null) {
-            return Map.of(
-                "success", false,
-                "error", "配置不存在：" + key
-            );
-        }
-        
-        return Map.of(
-            "success", true,
-            "key", key,
-            "value", value
+    public ResponseEntity<Map<String, Object>> getConfig() {
+        Map<String, Object> config = Map.of(
+            "ai", Map.of(
+                "model", jclawProperties.getAi().getModel(),
+                "zhipuConfigured", jclawProperties.getAi().getZhipu().getApiKey() != null && 
+                    !jclawProperties.getAi().getZhipu().getApiKey().isEmpty() &&
+                    !jclawProperties.getAi().getZhipu().getApiKey().equals("your-api-key-here")
+            ),
+            "memory", Map.of(
+                "enabled", jclawProperties.getMemory().isEnabled(),
+                "path", jclawProperties.getMemory().getPath(),
+                "dailyLogEnabled", jclawProperties.getMemory().isDailyLogEnabled()
+            ),
+            "channels", Map.of(
+                "enabled", jclawProperties.getChannels().isEnabled(),
+                "feishuEnabled", jclawProperties.getChannels().getFeishu().isEnabled()
+            ),
+            "skills", Map.of(
+                "enabled", jclawProperties.getSkills().isEnabled()
+            )
         );
+        
+        return ResponseEntity.ok(config);
     }
     
     /**
-     * 更新配置
+     * 配置状态检查
      */
-    @PutMapping("/{key}")
-    public Map<String, Object> updateConfig(
-            @PathVariable String key,
-            @RequestBody Map<String, Object> body) {
+    @GetMapping("/status")
+    public ResponseEntity<Map<String, Object>> configStatus() {
+        boolean aiConfigured = jclawProperties.getAi().getZhipu().getApiKey() != null && 
+            !jclawProperties.getAi().getZhipu().getApiKey().isEmpty() &&
+            !jclawProperties.getAi().getZhipu().getApiKey().equals("your-api-key-here");
         
-        Object value = body.get("value");
-        if (value == null) {
-            return Map.of(
-                "success", false,
-                "error", "value 不能为空"
-            );
-        }
+        boolean feishuConfigured = jclawProperties.getChannels().getFeishu().getAppId() != null && 
+            !jclawProperties.getChannels().getFeishu().getAppId().isEmpty();
         
-        logger.info("更新配置：{} = {}", key, value);
-        hotReloadConfig.set(key, value);
-        
-        return Map.of(
-            "success", true,
-            "key", key,
-            "value", value
+        Map<String, Object> status = Map.of(
+            "ready", aiConfigured,
+            "checks", Map.of(
+                "aiConfigured", aiConfigured,
+                "feishuConfigured", feishuConfigured,
+                "memoryEnabled", jclawProperties.getMemory().isEnabled(),
+                "skillsEnabled", jclawProperties.getSkills().isEnabled()
+            ),
+            "warnings", aiConfigured ? new String[0] : new String[]{"智谱 AI API Key 未配置"}
         );
-    }
-    
-    /**
-     * 重新加载配置
-     */
-    @PostMapping("/reload")
-    public Map<String, Object> reloadConfig() {
-        logger.info("手动重新加载配置");
-        hotReloadConfig.reloadConfig();
         
-        return Map.of(
-            "success", true,
-            "message", "配置已重新加载"
-        );
-    }
-    
-    /**
-     * 列出历史版本
-     */
-    @GetMapping("/history")
-    public Map<String, Object> listHistory() {
-        logger.info("列出配置历史");
-        List<String> history = hotReloadConfig.listHistory();
-        
-        return Map.of(
-            "success", true,
-            "count", history.size(),
-            "versions", history
-        );
-    }
-    
-    /**
-     * 回滚配置
-     */
-    @PostMapping("/rollback")
-    public Map<String, Object> rollback(@RequestBody Map<String, String> body) {
-        String timestamp = body.get("timestamp");
-        if (timestamp == null) {
-            return Map.of(
-                "success", false,
-                "error", "timestamp 不能为空"
-            );
-        }
-        
-        logger.info("回滚配置到：{}", timestamp);
-        boolean success = hotReloadConfig.rollback(timestamp);
-        
-        if (success) {
-            return Map.of(
-                "success", true,
-                "message", "配置已回滚到：" + timestamp
-            );
-        } else {
-            return Map.of(
-                "success", false,
-                "error", "回滚失败"
-            );
-        }
+        return ResponseEntity.ok(status);
     }
 }
