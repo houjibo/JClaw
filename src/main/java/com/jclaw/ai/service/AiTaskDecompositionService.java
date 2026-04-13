@@ -365,7 +365,9 @@ public class AiTaskDecompositionService {
             default -> 1;
         };
 
-        return Math.min(10, baseScore * typeMultiplier);
+        int complexity = baseScore * typeMultiplier;
+        // 确保返回值在 1-10 范围内
+        return Math.max(1, Math.min(10, complexity));
     }
 
     /**

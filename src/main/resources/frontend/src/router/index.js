@@ -10,6 +10,11 @@ import ChannelManager from '../views/ChannelManager.vue'
 import TestRecommender from '../views/TestRecommender.vue'
 import ConfigPanel from '../views/ConfigPanel.vue'
 import CallChain3D from '../views/CallChain3D.vue'
+import CallChain3DPage from '../views/CallChain3DPage.vue'
+import IntentGraphPage from '../views/IntentGraphPage.vue'
+import Dashboard from '../views/Dashboard.vue'
+import SkillMarketplace from '../views/SkillMarketplace.vue'
+import PerformanceMonitor from '../views/PerformanceMonitor.vue'
 
 const routes = [
   {
@@ -76,6 +81,36 @@ const routes = [
     path: '/trace-3d',
     name: 'Trace3D',
     component: CallChain3D,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/call-chain-3d',
+    name: 'CallChain3DPage',
+    component: CallChain3DPage,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/intent-graph',
+    name: 'IntentGraphPage',
+    component: IntentGraphPage,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/dashboard',
+    name: 'Dashboard',
+    component: Dashboard,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/skill-marketplace',
+    name: 'SkillMarketplace',
+    component: SkillMarketplace,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/performance',
+    name: 'Performance',
+    component: PerformanceMonitor,
     meta: { requiresAuth: true }
   }
 ]

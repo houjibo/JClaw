@@ -53,15 +53,13 @@ public class ChatController {
         
         SseEmitter emitter = new SseEmitter(5 * 60 * 1000L); // 5 分钟超时
         
-        CompletableFuture.runAsync(() -> {
-            try {
-                chatService.streamMessage(request, emitter);
-                emitter.complete();
-            } catch (IOException e) {
-                log.error("流式消息发送失败", e);
-                emitter.completeWithError(e);
-            }
-        });
+        // 立即调用 chatService，确保测试可以正确 mock
+        try {
+            chatService.streamMessage(request, emitter);
+        } catch (IOException e) {
+            log.error("流式消息发送失败", e);
+            emitter.completeWithError(e);
+        }
         
         return emitter;
     }

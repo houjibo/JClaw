@@ -33,12 +33,16 @@ public class CommandController {
                 result.put("commands", commandRegistry.listCommandsByCategory(cat));
             } catch (IllegalArgumentException e) {
                 result.put("error", "无效的类别：" + category);
+                result.put("total", 0);
+                result.put("stats", commandRegistry.getStats());
+                return result;
             }
         } else {
             result.put("commands", commandRegistry.listCommands());
         }
         
-        result.put("total", ((List<?>) result.get("commands")).size());
+        List<?> commands = (List<?>) result.get("commands");
+        result.put("total", commands != null ? commands.size() : 0);
         result.put("stats", commandRegistry.getStats());
         
         return result;

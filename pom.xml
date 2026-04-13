@@ -275,6 +275,15 @@
                 </configuration>
             </plugin>
             
+            <!-- Surefire plugin with Byte Buddy experimental support for JDK 25 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>--add-opens java.base/java.lang=ALL-UNNAMED -Dnet.bytebuddy.experimental=true</argLine>
+                </configuration>
+            </plugin>
+            
             <!-- CLI 可执行 JAR -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
