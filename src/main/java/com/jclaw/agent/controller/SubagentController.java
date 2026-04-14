@@ -1,100 +1,131 @@
 package com.jclaw.agent.controller;
 
-import com.jclaw.common.entity.Result;
 import com.jclaw.agent.entity.Subagent;
 import com.jclaw.agent.service.SubagentService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Subagent REST API 控制器
+ * Subagent 管理 REST API 控制器
+ * 
+ * @author JClaw
+ * @since 2026-04-14
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/subagents")
-@Slf4j
+@RequiredArgsConstructor
 public class SubagentController {
-
-    @Autowired
-    private SubagentService subagentService;
-
+    
+    private final SubagentService subagentService;
+    
     /**
      * 创建 Subagent
+     * POST /api/subagents
      */
     @PostMapping
-    public Result<Subagent> createSubagent(@RequestBody Map<String, String> request) {
-        String parentAgentId = request.get("parentAgentId");
-        String role = request.get("role");
-        String task = request.get("task");
-        
+    public ResponseEntity<Subagent> createSubagent(
+            @RequestParam String parentAgentId,
+            @RequestParam String role,
+            @RequestParam String task) {
         Subagent subagent = subagentService.createSubagent(parentAgentId, role, task);
-        return Result.success(subagent);
+        return ResponseEntity.ok(subagent);
     }
-
+    
     /**
-     * 获取 Subagent 状态
+     * 获取 Subagent 详情
+     * GET /api/subagents/{id}
      */
     @GetMapping("/{id}")
-    public Result<Subagent> getSubagent(@PathVariable String id) {
+    public ResponseEntity<Subagent> getSubagent(@PathVariable String id) {
         Subagent subagent = subagentService.getSubagent(id);
         if (subagent == null) {
-            return Result.error("Subagent 不存在");
+            return ResponseEntity.notFound().build();
         }
-        return Result.success(subagent);
+        return ResponseEntity.ok(subagent);
     }
-
+    
     /**
-     * 列出 Subagent
+     * 列出 Subagents
+     * GET /api/subagents?parentAgentId=xxx
      */
     @GetMapping
-    public Result<List<Subagent>> listSubagents(
-        @RequestParam(required = false) String parentAgentId
-    ) {
+    public ResponseEntity<List<Subagent>> listSubagents(
+            @RequestParam(required = false) String parentAgentId) {
         List<Subagent> subagents = subagentService.listSubagents(parentAgentId);
-        return Result.success(subagents);
+        return ResponseEntity.ok(subagents);
     }
-
+    
     /**
-     * 更新状态
+     * 更新 Subagent 状态
+     * POST /api/subagents/{id}/status
      */
-    @PatchMapping("/{id}/status")
-    public Result<Void> updateStatus(
-        @PathVariable String id,
-        @RequestBody Map<String, String> request
-    ) {
-        String status = request.get("status");
+    @PostMapping("/{id}/status")
+    public ResponseEntity<Void> updateStatus(
+            @PathVariable String id,
+            @RequestParam String status) {
         subagentService.updateStatus(id, status);
-        return Result.success();
+        return ResponseEntity.ok().build();
     }
-
+    
     /**
-     * 提交结果
+     * 提交 Subagent 结果
+     * POST /api/subagents/{id}/result
      */
     @PostMapping("/{id}/result")
-    public Result<Void> submitResult(
-        @PathVariable String id,
-        @RequestBody Map<String, String> request
-    ) {
-        String output = request.get("output");
-        subagentService.submitResult(id, output);
-        return Result.success();
-    }
-
-    /**
-     * 等待完成
-     */
-    @PostMapping("/{id}/wait")
-    public Result<Subagent> waitForCompletion(
-        @PathVariable String id,
-        @RequestParam(defaultValue = "300000") long timeoutMs
-    ) {
-        Subagent subagent = subagentService.waitForCompletion(id, timeoutMs);
-        if (subagent == null) {
-            return Result.error("等待超时");
+    public ResponseEntity<Void> submitResult(
+            @PathVariable String id,
+            @RequestBody Map<String, String> body) {
+        String output = body.get("output");
+        if (output != null) {
+            subagentService.submitResult(id, output);
         }
-        return Result.success(subagent);
+        return ResponseEntity.ok().build();
+    }
+    
+    /**
+     * 等待 Subagent 完成
+     * GET /api/subagents/{id}/wait?timeout=5000
+     */
+    @GetMapping("/{id}/wait")
+    public ResponseEntity<Subagent> waitForCompletion(
+            @PathVariable String id,
+            @RequestParam(defaultValue = "5000") long timeout) {
+        Subagent subagent = subagentService.waitForCompletion(id, timeout);
+        if (subagent == null) {
+            return ResponseEntity.ok().build(); // 超时返回空
+        }
+        return ResponseEntity.ok(subagent);
+    }
+    
+    /**
+     * 批量创建 Subagents（联军模式）
+     * POST /api/subagents/batch
+     */
+    @PostMapping("/batch")
+    public ResponseEntity<Map<String, Object>> createBatchSubagents(
+            @RequestParam String parentAgentId,
+            @RequestBody List<Map<String, String>> tasks) {
+        
+        List<Subagent> subagents = tasks.stream()
+            .map(task -> subagentService.createSubagent(
+                parentAgentId,
+                task.get("role"),
+                task.get("task")
+            ))
+            .toList();
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("count", subagents.size());
+        response.put("subagents", subagents);
+        
+        return ResponseEntity.ok(response);
     }
 }

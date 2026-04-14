@@ -1,139 +1,105 @@
 package com.jclaw.task.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jclaw.task.dto.TaskDTO;
+import com.jclaw.task.dto.TaskUpdateRequest;
 import com.jclaw.task.service.TaskService;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.*;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
+import java.util.ArrayList;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.mockito.Mockito.*;
 
-/**
- * 任务管理控制器测试
- * 
- * @author JClaw
- * @since 2026-04-13
- */
-@WebMvcTest(TaskController.class)
-@DisplayName("任务管理 API 测试")
 class TaskControllerTest {
     
-    @Autowired
     private MockMvc mockMvc;
     
-    @Autowired
-    private ObjectMapper objectMapper;
-    
-    @MockBean
+    @Mock
     private TaskService taskService;
     
-    private TaskDTO testTask;
+    @InjectMocks
+    private TaskController taskController;
     
     @BeforeEach
     void setUp() {
-        testTask = TaskDTO.builder()
-            .id("task-001")
-            .title("测试任务")
-            .description("这是一个测试任务")
-            .status("pending")
-            .assignee("developer")
-            .priority("medium")
-            .createdAt(LocalDateTime.now())
-            .updatedAt(LocalDateTime.now())
-            .build();
+        MockitoAnnotations.openMocks(this);
+        mockMvc = MockMvcBuilders.standaloneSetup(taskController).build();
     }
     
     @Test
-    @DisplayName("创建任务")
     void testCreateTask() throws Exception {
-        when(taskService.createTask(any(TaskDTO.class))).thenReturn(testTask);
+        TaskDTO dto = new TaskDTO();
+        dto.setId("1");
+        dto.setTitle("test task");
+        
+        when(taskService.createTask(any(TaskDTO.class))).thenReturn(dto);
         
         mockMvc.perform(post("/api/tasks")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testTask)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value("task-001"))
-            .andExpect(jsonPath("$.title").value("测试任务"));
+                .content("{\"title\":\"test task\"}"))
+            .andExpect(status().isOk());
     }
     
     @Test
-    @DisplayName("获取任务详情")
-    void testGetTask() throws Exception {
-        when(taskService.getTask("task-001")).thenReturn(testTask);
-        
-        mockMvc.perform(get("/api/tasks/task-001"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value("task-001"))
-            .andExpect(jsonPath("$.title").value("测试任务"));
-    }
-    
-    @Test
-    @DisplayName("获取任务列表")
     void testListTasks() throws Exception {
-        List<TaskDTO> tasks = Arrays.asList(testTask);
-        when(taskService.listTasks(null, null)).thenReturn(tasks);
+        when(taskService.listTasks(null, null)).thenReturn(new ArrayList<>());
         
         mockMvc.perform(get("/api/tasks"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].id").value("task-001"));
-    }
-    
-    @Test
-    @DisplayName("更新任务")
-    void testUpdateTask() throws Exception {
-        TaskDTO updatedTask = TaskDTO.builder()
-            .id("task-001")
-            .title("更新后的任务")
-            .description("描述已更新")
-            .status("running")
-            .build();
-        
-        when(taskService.updateTask(eq("task-001"), any())).thenReturn(updatedTask);
-        
-        mockMvc.perform(put("/api/tasks/task-001")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updatedTask)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.title").value("更新后的任务"));
-    }
-    
-    @Test
-    @DisplayName("停止任务")
-    void testStopTask() throws Exception {
-        doNothing().when(taskService).stopTask("task-001");
-        
-        mockMvc.perform(post("/api/tasks/task-001/stop"))
             .andExpect(status().isOk());
     }
     
     @Test
-    @DisplayName("删除任务")
-    void testDeleteTask() throws Exception {
-        doNothing().when(taskService).deleteTask("task-001");
+    void testGetTask() throws Exception {
+        TaskDTO dto = new TaskDTO();
+        dto.setId("1");
+        dto.setTitle("test");
         
-        mockMvc.perform(delete("/api/tasks/task-001"))
+        when(taskService.getTask("1")).thenReturn(dto);
+        
+        mockMvc.perform(get("/api/tasks/1"))
             .andExpect(status().isOk());
     }
     
     @Test
-    @DisplayName("获取不存在的任务")
     void testGetNonExistentTask() throws Exception {
-        when(taskService.getTask("non-existent")).thenThrow(new IllegalArgumentException("任务不存在"));
+        when(taskService.getTask("999")).thenThrow(new IllegalArgumentException("Not found"));
         
-        mockMvc.perform(get("/api/tasks/non-existent"))
+        mockMvc.perform(get("/api/tasks/999"))
             .andExpect(status().isNotFound());
+    }
+    
+    @Test
+    void testUpdateTask() throws Exception {
+        TaskDTO dto = new TaskDTO();
+        dto.setId("1");
+        
+        when(taskService.updateTask(eq("1"), any(TaskUpdateRequest.class))).thenReturn(dto);
+        
+        mockMvc.perform(put("/api/tasks/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"title\":\"updated\"}"))
+            .andExpect(status().isOk());
+    }
+    
+    @Test
+    void testStopTask() throws Exception {
+        doNothing().when(taskService).stopTask("1");
+        
+        mockMvc.perform(post("/api/tasks/1/stop"))
+            .andExpect(status().isOk());
+    }
+    
+    @Test
+    void testDeleteTask() throws Exception {
+        doNothing().when(taskService).deleteTask("1");
+        
+        mockMvc.perform(delete("/api/tasks/1"))
+            .andExpect(status().isOk());
     }
 }

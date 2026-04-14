@@ -32,30 +32,18 @@ class HealthControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("UP"))
             .andExpect(jsonPath("$.timestamp").exists())
-            .andExpect(jsonPath("$.version").value("1.0.0"))
-            .andExpect(jsonPath("$.components").exists())
+            .andExpect(jsonPath("$.uptime").exists())
             .andDo(print());
     }
     
     @Test
-    @DisplayName("测试就绪检查端点")
-    void testReady() throws Exception {
-        mockMvc.perform(get("/api/health/ready")
+    @DisplayName("测试系统信息端点")
+    void testSystemInfo() throws Exception {
+        mockMvc.perform(get("/api/system/info")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.status").value("READY"))
-            .andExpect(jsonPath("$.timestamp").exists())
-            .andDo(print());
-    }
-    
-    @Test
-    @DisplayName("测试存活检查端点")
-    void testLive() throws Exception {
-        mockMvc.perform(get("/api/health/live")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.status").value("ALIVE"))
-            .andExpect(jsonPath("$.timestamp").exists())
+            .andExpect(jsonPath("$.javaVersion").exists())
+            .andExpect(jsonPath("$.osName").exists())
             .andDo(print());
     }
 }

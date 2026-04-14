@@ -16,4 +16,6 @@ public class CodeExplanation {
     private String detailedExplanation;
     private java.util.List<String> keyFunctions;
     private java.util.List<String> dependencies;
+    private int complexity;
+    private int linesOfCode;
 }

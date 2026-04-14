@@ -1,4 +1,4 @@
-package com.jclaw.services;
+package com.jclaw.mcp;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -12,6 +12,8 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.jclaw.mcp.McpProtocol.*;
 
 /**
  * MCP 服务 - 深度集成 Model Context Protocol
@@ -236,36 +238,137 @@ public class McpService {
     }
     
     /**
-     * 列出指定服务器的工具
+     * 列出所有工具（不区分服务器）
      */
-    public List<Map<String, Object>> listTools(String serverName) {
-        McpServer server = servers.get(serverName);
-        if (server == null) {
-            throw new RuntimeException("MCP 服务器不存在：" + serverName);
+    public List<Tool> listTools() {
+        List<Tool> allTools = new ArrayList<>();
+        for (McpServer server : servers.values()) {
+            if (server.enabled && server.tools != null) {
+                for (Map<String, Object> toolMap : server.tools) {
+                    Tool tool = new Tool();
+                    tool.setName((String) toolMap.get("name"));
+                    tool.setDescription((String) toolMap.get("description"));
+                    allTools.add(tool);
+                }
+            }
         }
-        return server.tools;
+        return allTools;
     }
     
     /**
-     * 列出指定服务器的资源
+     * 列出所有资源（不区分服务器）
      */
-    public List<Map<String, Object>> listResources(String serverName) {
-        McpServer server = servers.get(serverName);
-        if (server == null) {
-            throw new RuntimeException("MCP 服务器不存在：" + serverName);
+    public List<Resource> listResources() {
+        List<Resource> allResources = new ArrayList<>();
+        for (McpServer server : servers.values()) {
+            if (server.enabled && server.resources != null) {
+                for (Map<String, Object> resMap : server.resources) {
+                    Resource resource = new Resource();
+                    resource.setUri((String) resMap.get("uri"));
+                    resource.setName((String) resMap.get("name"));
+                    resource.setDescription((String) resMap.get("description"));
+                    resource.setMimeType((String) resMap.get("mimeType"));
+                    allResources.add(resource);
+                }
+            }
         }
-        return server.resources;
+        return allResources;
     }
     
     /**
-     * 列出指定服务器的提示词
+     * 列出所有提示词（不区分服务器）
      */
-    public List<Map<String, Object>> listPrompts(String serverName) {
-        McpServer server = servers.get(serverName);
-        if (server == null) {
-            throw new RuntimeException("MCP 服务器不存在：" + serverName);
+    public List<Prompt> listPrompts() {
+        List<Prompt> allPrompts = new ArrayList<>();
+        for (McpServer server : servers.values()) {
+            if (server.enabled && server.prompts != null) {
+                for (Map<String, Object> promptMap : server.prompts) {
+                    Prompt prompt = new Prompt();
+                    prompt.setName((String) promptMap.get("name"));
+                    prompt.setDescription((String) promptMap.get("description"));
+                    allPrompts.add(prompt);
+                }
+            }
         }
-        return server.prompts;
+        return allPrompts;
+    }
+    
+    /**
+     * 调用工具
+     */
+    public Response callTool(String toolName, Map<String, Object> args) {
+        // 遍历所有服务器查找工具
+        for (McpServer server : servers.values()) {
+            if (server.enabled && server.tools != null) {
+                for (Map<String, Object> toolMap : server.tools) {
+                    String name = (String) toolMap.get("name");
+                    if (name != null && name.equals(toolName)) {
+                        try {
+                            Map<String, Object> result = callTool(server.name, toolName, args);
+                            Response response = new Response();
+                            response.setResult((Map<String, Object>) result);
+                            return response;
+                        } catch (Exception e) {
+                            Response response = new Response();
+                            Response.Error error = new Response.Error();
+                            error.setCode(-1);
+                            error.setMessage(e.getMessage());
+                            response.setError(error);
+                            return response;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // 工具未找到
+        Response response = new Response();
+        Response.Error error = new Response.Error();
+        error.setCode(-32601);
+        error.setMessage("工具未找到：" + toolName);
+        response.setError(error);
+        return response;
+    }
+    
+    /**
+     * 读取资源
+     */
+    public String readResource(String uri) {
+        logger.info("读取 MCP 资源：{}", uri);
+        
+        // 支持本地文件资源
+        if (uri.startsWith("file://")) {
+            try {
+                String filePath = uri.substring(7); // 移除 file:// 前缀
+                java.nio.file.Path path = java.nio.file.Paths.get(filePath);
+                if (java.nio.file.Files.exists(path)) {
+                    String content = java.nio.file.Files.readString(path);
+                    logger.info("本地文件读取成功：{} bytes", content.length());
+                    return content;
+                } else {
+                    logger.warn("本地文件不存在：{}", filePath);
+                    return "";
+                }
+            } catch (Exception e) {
+                logger.error("读取本地文件失败：{}", uri, e);
+                return "";
+            }
+        }
+        
+        // 遍历所有服务器查找远程资源
+        for (McpServer server : servers.values()) {
+            if (server.enabled && server.resources != null) {
+                for (Map<String, Object> resMap : server.resources) {
+                    String resUri = (String) resMap.get("uri");
+                    if (resUri != null && resUri.equals(uri)) {
+                        return readResource(server.name, uri);
+                    }
+                }
+            }
+        }
+        
+        logger.warn("资源未找到：{}", uri);
+        return "";
     }
     
     /**

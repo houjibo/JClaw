@@ -1,4 +1,4 @@
-package com.jclaw.services;
+package com.jclaw.mcp;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,6 +8,11 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import com.jclaw.mcp.McpProtocol.Tool;
+import com.jclaw.mcp.McpProtocol.Resource;
+import com.jclaw.mcp.McpProtocol.Prompt;
+import com.jclaw.mcp.McpProtocol.Response;
 
 /**
  * MCP 服务测试
@@ -50,16 +55,8 @@ class McpServiceTest {
     void testListTools() {
         mcpService.registerServer("test-server", "http://localhost:3000/mcp");
         
-        // 由于是测试，服务器不存在，应该返回空列表或抛出异常
-        assertDoesNotThrow(() -> mcpService.listTools("test-server"));
-    }
-    
-    @Test
-    @DisplayName("测试列出不存在的服务器工具")
-    void testListToolsForNonExistentServer() {
-        assertThrows(RuntimeException.class, () -> {
-            mcpService.listTools("non-exist");
-        });
+        List<Tool> tools = mcpService.listTools();
+        assertNotNull(tools);
     }
     
     @Test
@@ -67,13 +64,11 @@ class McpServiceTest {
     void testSetServerEnabled() {
         mcpService.registerServer("test-server", "http://localhost:3000/mcp");
         
-        // 禁用服务器
         mcpService.setServerEnabled("test-server", false);
         
         List<Map<String, Object>> servers = mcpService.listServers();
         assertEquals(false, servers.get(0).get("enabled"));
         
-        // 重新启用
         mcpService.setServerEnabled("test-server", true);
         servers = mcpService.listServers();
         assertEquals(true, servers.get(0).get("enabled"));
@@ -92,37 +87,36 @@ class McpServiceTest {
     }
     
     @Test
-    @DisplayName("测试调用不存在的服务器工具")
-    void testCallToolOnNonExistentServer() {
-        assertThrows(RuntimeException.class, () -> {
-            mcpService.callTool("non-exist", "test-tool", Map.of());
-        });
+    @DisplayName("测试调用工具 - 工具未找到")
+    void testCallToolNotFound() {
+        Response response = mcpService.callTool("non-exist-tool", Map.of());
+        assertNotNull(response.getError());
+        assertEquals(-32601, response.getError().getCode());
+        assertTrue(response.getError().getMessage().contains("工具未找到"));
     }
     
     @Test
-    @DisplayName("测试调用已禁用服务器的工具")
-    void testCallToolOnDisabledServer() {
+    @DisplayName("测试读取资源 - 资源未找到")
+    void testReadResourceNotFound() {
+        String content = mcpService.readResource("resource://non-exist");
+        assertEquals("", content);
+    }
+    
+    @Test
+    @DisplayName("测试列出资源")
+    void testListResources() {
         mcpService.registerServer("test-server", "http://localhost:3000/mcp");
-        mcpService.setServerEnabled("test-server", false);
         
-        assertThrows(RuntimeException.class, () -> {
-            mcpService.callTool("test-server", "test-tool", Map.of());
-        });
+        List<Resource> resources = mcpService.listResources();
+        assertNotNull(resources);
     }
     
     @Test
-    @DisplayName("测试读取不存在的服务器资源")
-    void testReadResourceFromNonExistentServer() {
-        assertThrows(RuntimeException.class, () -> {
-            mcpService.readResource("non-exist", "resource://test");
-        });
-    }
-    
-    @Test
-    @DisplayName("测试获取不存在的服务器提示词")
-    void testGetPromptFromNonExistentServer() {
-        assertThrows(RuntimeException.class, () -> {
-            mcpService.getPrompt("non-exist", "test-prompt", Map.of());
-        });
+    @DisplayName("测试列出提示词")
+    void testListPrompts() {
+        mcpService.registerServer("test-server", "http://localhost:3000/mcp");
+        
+        List<Prompt> prompts = mcpService.listPrompts();
+        assertNotNull(prompts);
     }
 }
