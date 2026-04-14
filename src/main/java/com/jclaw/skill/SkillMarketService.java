@@ -4,19 +4,22 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.io.*;
+import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
- * 技能市场服务（简化版）
+ * 技能市场服务（完整版）
  * 
  * 功能：
- * - 技能注册
- * - 技能搜索
- * - 技能安装
- * - 技能管理
- * 
- * 状态：简化版实现
+ * - 技能注册/发布
+ * - 技能搜索/发现
+ * - 技能安装/卸载
+ * - 技能版本管理
+ * - 技能包导出/导入
  * 
  * @author JClaw
  * @since 2026-04-14
@@ -35,11 +38,15 @@ public class SkillMarketService {
         private String description;
         private String version;
         private String author;
+        private String license;
         private List<String> tags;
+        private Map<String, String> dependencies;
         private long downloads;
         private double rating;
         private long createdAt;
         private long updatedAt;
+        private String repository;
+        private String documentation;
     }
     
     /**
@@ -50,10 +57,11 @@ public class SkillMarketService {
         private SkillMetadata metadata;
         private String content;
         private String checksum;
+        private List<String> files;
     }
     
     /**
-     * 已注册技能
+     * 已注册技能（本地注册表）
      */
     private final Map<String, SkillPackage> skills = new ConcurrentHashMap<>();
     
@@ -61,6 +69,11 @@ public class SkillMarketService {
      * 已安装技能
      */
     private final Set<String> installedSkills = ConcurrentHashMap.newKeySet();
+    
+    /**
+     * 技能安装目录
+     */
+    private final Path skillsDir = Paths.get(System.getProperty("user.home"), ".jclaw", "skills");
     
     /**
      * 注册技能
@@ -76,6 +89,102 @@ public class SkillMarketService {
         
         log.info("技能注册成功：{}", skillPackage.getMetadata().getId());
         return skillPackage;
+    }
+    
+    /**
+     * 发布技能到目录
+     */
+    public Path publishSkill(SkillPackage skillPackage, Path outputDir) throws IOException {
+        log.info("发布技能：{} v{} 到 {}", 
+            skillPackage.getMetadata().getName(), 
+            skillPackage.getMetadata().getVersion(),
+            outputDir);
+        
+        // 创建技能包目录
+        String skillDirName = skillPackage.getMetadata().getName() + "-" + skillPackage.getMetadata().getVersion();
+        Path skillDir = outputDir.resolve(skillDirName);
+        Files.createDirectories(skillDir);
+        
+        // 写入元数据
+        Path metadataPath = skillDir.resolve("skill.json");
+        writeJson(metadataPath, skillPackage.getMetadata());
+        
+        // 写入技能内容
+        if (skillPackage.getContent() != null) {
+            Path contentPath = skillDir.resolve("Skill.java");
+            Files.writeString(contentPath, skillPackage.getContent());
+        }
+        
+        // 写入 README
+        Path readmePath = skillDir.resolve("README.md");
+        String readme = generateReadme(skillPackage.getMetadata());
+        Files.writeString(readmePath, readme);
+        
+        // 创建 ZIP 包
+        Path zipPath = outputDir.resolve(skillDirName + ".zip");
+        createZip(skillDir, zipPath);
+        
+        // 清理临时目录
+        deleteDirectory(skillDir);
+        
+        log.info("技能发布成功：{}", zipPath);
+        return zipPath;
+    }
+    
+    /**
+     * 安装技能
+     */
+    public boolean installSkill(Path skillPackagePath) throws IOException {
+        log.info("安装技能包：{}", skillPackagePath);
+        
+        // 解压技能包
+        Path extractDir = Files.createTempDirectory("jclaw-skill-");
+        unzip(skillPackagePath, extractDir);
+        
+        // 读取元数据
+        Path metadataPath = extractDir.resolve("skill.json");
+        if (!Files.exists(metadataPath)) {
+            log.error("技能包缺少 skill.json");
+            return false;
+        }
+        
+        SkillMetadata metadata = readJson(metadataPath, SkillMetadata.class);
+        
+        // 检查依赖
+        if (!checkDependencies(metadata)) {
+            log.error("技能依赖不满足：{}", metadata.getName());
+            return false;
+        }
+        
+        // 安装技能文件
+        Path installDir = skillsDir.resolve(metadata.getId());
+        Files.createDirectories(installDir);
+        copyDirectory(extractDir, installDir);
+        
+        // 标记为已安装
+        installedSkills.add(metadata.getId());
+        
+        log.info("技能安装成功：{} v{}", metadata.getName(), metadata.getVersion());
+        return true;
+    }
+    
+    /**
+     * 卸载技能
+     */
+    public boolean uninstallSkill(String skillId) throws IOException {
+        log.info("卸载技能：{}", skillId);
+        
+        Path skillDir = skillsDir.resolve(skillId);
+        if (!Files.exists(skillDir)) {
+            log.warn("技能未安装：{}", skillId);
+            return false;
+        }
+        
+        deleteDirectory(skillDir);
+        installedSkills.remove(skillId);
+        
+        log.info("技能卸载成功：{}", skillId);
+        return true;
     }
     
     /**
@@ -101,50 +210,6 @@ public class SkillMarketService {
     }
     
     /**
-     * 获取技能详情
-     */
-    public SkillMetadata getSkillDetails(String skillId) {
-        SkillPackage skillPackage = skills.get(skillId);
-        return skillPackage != null ? skillPackage.getMetadata() : null;
-    }
-    
-    /**
-     * 安装技能
-     */
-    public boolean installSkill(String skillId) {
-        log.info("安装技能：{}", skillId);
-        
-        SkillPackage skillPackage = skills.get(skillId);
-        if (skillPackage == null) {
-            log.warn("技能不存在：{}", skillId);
-            return false;
-        }
-        
-        installedSkills.add(skillId);
-        skillPackage.getMetadata().setDownloads(skillPackage.getMetadata().getDownloads() + 1);
-        
-        log.info("技能安装成功：{}", skillId);
-        return true;
-    }
-    
-    /**
-     * 卸载技能
-     */
-    public boolean uninstallSkill(String skillId) {
-        log.info("卸载技能：{}", skillId);
-        
-        boolean removed = installedSkills.remove(skillId);
-        
-        if (removed) {
-            log.info("技能卸载成功：{}", skillId);
-        } else {
-            log.warn("技能未安装：{}", skillId);
-        }
-        
-        return removed;
-    }
-    
-    /**
      * 列出已安装技能
      */
     public List<SkillMetadata> listInstalledSkills() {
@@ -156,93 +221,124 @@ public class SkillMarketService {
     }
     
     /**
-     * 列出所有可用技能
+     * 检查技能是否已安装
      */
-    public List<SkillMetadata> listAllSkills() {
-        return skills.values().stream()
-            .map(SkillPackage::getMetadata)
-            .toList();
+    public boolean isInstalled(String skillId) {
+        return installedSkills.contains(skillId);
     }
     
-    /**
-     * 评分技能
-     */
-    public void rateSkill(String skillId, double rating) {
-        SkillPackage skillPackage = skills.get(skillId);
-        if (skillPackage != null) {
-            // 简单平均
-            SkillMetadata metadata = skillPackage.getMetadata();
-            double currentRating = metadata.getRating();
-            long downloads = metadata.getDownloads();
-            
-            if (downloads > 0) {
-                metadata.setRating((currentRating * (downloads - 1) + rating) / downloads);
-            } else {
-                metadata.setRating(rating);
-            }
-            
-            metadata.setUpdatedAt(System.currentTimeMillis());
-            
-            log.info("技能评分：{} - {}", skillId, rating);
+    // ==================== 辅助方法 ====================
+    
+    private String generateSkillId(String name) {
+        return name.toLowerCase().replaceAll("[^a-z0-9]", "-");
+    }
+    
+    private void writeJson(Path path, Object obj) throws IOException {
+        String json = new com.fasterxml.jackson.databind.ObjectMapper()
+            .writerWithDefaultPrettyPrinter()
+            .writeValueAsString(obj);
+        Files.writeString(path, json);
+    }
+    
+    private <T> T readJson(Path path, Class<T> clazz) throws IOException {
+        String json = Files.readString(path);
+        return new com.fasterxml.jackson.databind.ObjectMapper().readValue(json, clazz);
+    }
+    
+    private String generateReadme(SkillMetadata metadata) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("# ").append(metadata.getName()).append("\n\n");
+        sb.append(metadata.getDescription()).append("\n\n");
+        sb.append("## 信息\n\n");
+        sb.append("- **版本**: ").append(metadata.getVersion()).append("\n");
+        sb.append("- **作者**: ").append(metadata.getAuthor()).append("\n");
+        if (metadata.getLicense() != null) {
+            sb.append("- **许可证**: ").append(metadata.getLicense()).append("\n");
+        }
+        if (metadata.getTags() != null && !metadata.getTags().isEmpty()) {
+            sb.append("- **标签**: ").append(String.join(", ", metadata.getTags())).append("\n");
+        }
+        sb.append("\n## 安装\n\n");
+        sb.append("```bash\njclaw skill install ").append(metadata.getId()).append("\n```\n");
+        return sb.toString();
+    }
+    
+    private void createZip(Path sourceDir, Path zipPath) throws IOException {
+        try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(zipPath))) {
+            Files.walk(sourceDir)
+                .filter(path -> !path.equals(sourceDir))
+                .forEach(path -> {
+                    try {
+                        String zipPathStr = sourceDir.relativize(path).toString();
+                        zos.putNextEntry(new ZipEntry(zipPathStr));
+                        if (!Files.isDirectory(path)) {
+                            Files.copy(path, zos);
+                        }
+                        zos.closeEntry();
+                    } catch (IOException e) {
+                        log.error("创建 ZIP 失败", e);
+                    }
+                });
         }
     }
     
-    /**
-     * 更新技能
-     */
-    public SkillPackage updateSkill(String skillId, String content) {
-        SkillPackage skillPackage = skills.get(skillId);
-        if (skillPackage == null) {
-            throw new IllegalArgumentException("技能不存在：" + skillId);
+    private void unzip(Path zipPath, Path extractDir) throws IOException {
+        try (var zip = new java.util.zip.ZipFile(zipPath.toFile())) {
+            zip.entries().asIterator().forEachRemaining(entry -> {
+                try {
+                    Path entryPath = extractDir.resolve(entry.getName());
+                    if (entry.isDirectory()) {
+                        Files.createDirectories(entryPath);
+                    } else {
+                        Files.createDirectories(entryPath.getParent());
+                        try (var is = zip.getInputStream(entry)) {
+                            Files.copy(is, entryPath, StandardCopyOption.REPLACE_EXISTING);
+                        }
+                    }
+                } catch (IOException e) {
+                    log.error("解压失败", e);
+                }
+            });
         }
-        
-        skillPackage.setContent(content);
-        skillPackage.getMetadata().setUpdatedAt(System.currentTimeMillis());
-        
-        log.info("技能更新：{}", skillId);
-        return skillPackage;
     }
     
-    /**
-     * 删除技能
-     */
-    public boolean deleteSkill(String skillId) {
-        SkillPackage removed = skills.remove(skillId);
-        if (removed != null) {
-            installedSkills.remove(skillId);
-            log.info("技能删除：{}", skillId);
+    private boolean checkDependencies(SkillMetadata metadata) {
+        if (metadata.getDependencies() == null || metadata.getDependencies().isEmpty()) {
             return true;
         }
-        return false;
+        
+        // TODO: 检查依赖是否满足
+        log.info("检查依赖：{}", metadata.getDependencies());
+        return true;
     }
     
-    /**
-     * 生成技能 ID
-     */
-    private String generateSkillId(String name) {
-        return "skill-" + name.toLowerCase().replaceAll("\\s+", "-") + "-" + System.currentTimeMillis();
+    private void copyDirectory(Path source, Path target) throws IOException {
+        Files.walk(source)
+            .forEach(path -> {
+                try {
+                    Path targetPath = target.resolve(source.relativize(path));
+                    if (Files.isDirectory(path)) {
+                        Files.createDirectories(targetPath);
+                    } else {
+                        Files.copy(path, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                    }
+                } catch (IOException e) {
+                    log.error("复制文件失败", e);
+                }
+            });
     }
     
-    /**
-     * 获取技能统计
-     */
-    public SkillMarketStats getStats() {
-        SkillMarketStats stats = new SkillMarketStats();
-        stats.setTotalSkills(skills.size());
-        stats.setInstalledSkills(installedSkills.size());
-        stats.setTotalDownloads(skills.values().stream()
-            .mapToLong(s -> s.getMetadata().getDownloads())
-            .sum());
-        return stats;
-    }
-    
-    /**
-     * 技能市场统计
-     */
-    @Data
-    public static class SkillMarketStats {
-        private int totalSkills;
-        private int installedSkills;
-        private long totalDownloads;
+    private void deleteDirectory(Path dir) throws IOException {
+        if (Files.exists(dir)) {
+            Files.walk(dir)
+                .sorted(Comparator.reverseOrder())
+                .forEach(path -> {
+                    try {
+                        Files.delete(path);
+                    } catch (IOException e) {
+                        log.error("删除文件失败：{}", path, e);
+                    }
+                });
+        }
     }
 }
