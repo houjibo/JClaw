@@ -7,13 +7,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -178,24 +183,75 @@ public class TelegramChannelAdapter implements ChannelAdapter {
         try {
             String url = API_BASE + botToken + "/sendDocument";
             
-            // TODO: 实现文件上传（需要 multipart/form-data）
-            log.info("发送 Telegram 文件：{} - {}", chatId, filePath);
+            // 读取文件内容
+            Path path = Paths.get(filePath);
+            if (!Files.exists(path)) {
+                log.error("文件不存在：{}", filePath);
+                return;
+            }
             
-            Map<String, Object> body = new HashMap<>();
-            body.put("chat_id", chatId);
-            body.put("caption", caption);
+            byte[] fileBytes = Files.readAllBytes(path);
+            String fileName = path.getFileName().toString();
+            
+            // 构建 multipart/form-data 请求
+            String boundary = "----WebKitFormBoundary" + UUID.randomUUID().toString().replace("-", "");
+            
+            byte[] body = buildMultipartBody(boundary, chatId, caption, fileBytes, fileName);
             
             HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)))
-                .header("Content-Type", "application/json")
+                .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+                .POST(HttpRequest.BodyPublishers.ofByteArray(body))
                 .build();
             
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            log.info("Telegram 文件发送响应：{}", response.statusCode());
+            
+            if (response.statusCode() == 200) {
+                log.info("Telegram 文件发送成功：{} ({} bytes)", fileName, fileBytes.length);
+            } else {
+                log.error("Telegram 文件发送失败：{} - {}", response.statusCode(), response.body());
+            }
         } catch (Exception e) {
             log.error("Telegram 文件发送异常", e);
         }
+    }
+    
+    /**
+     * 构建 multipart/form-data 请求体
+     */
+    private byte[] buildMultipartBody(String boundary, String chatId, String caption, 
+                                       byte[] fileBytes, String fileName) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        String CRLF = "\r\n";
+        
+        // chat_id 字段
+        baos.write(("--" + boundary + CRLF).getBytes());
+        baos.write(("Content-Disposition: form-data; name=\"chat_id\"" + CRLF).getBytes());
+        baos.write((CRLF).getBytes());
+        baos.write(chatId.getBytes());
+        baos.write(CRLF.getBytes());
+        
+        // caption 字段 (可选)
+        if (caption != null && !caption.isEmpty()) {
+            baos.write(("--" + boundary + CRLF).getBytes());
+            baos.write(("Content-Disposition: form-data; name=\"caption\"" + CRLF).getBytes());
+            baos.write((CRLF).getBytes());
+            baos.write(caption.getBytes());
+            baos.write(CRLF.getBytes());
+        }
+        
+        // document 字段 (文件)
+        baos.write(("--" + boundary + CRLF).getBytes());
+        baos.write(("Content-Disposition: form-data; name=\"document\"; filename=\"" + fileName + "\"" + CRLF).getBytes());
+        baos.write(("Content-Type: application/octet-stream" + CRLF).getBytes());
+        baos.write((CRLF).getBytes());
+        baos.write(fileBytes);
+        baos.write(CRLF.getBytes());
+        
+        // 结束边界
+        baos.write(("--" + boundary + "--" + CRLF).getBytes());
+        
+        return baos.toByteArray();
     }
     
     /**

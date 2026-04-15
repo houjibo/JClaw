@@ -7,15 +7,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -285,24 +290,66 @@ public class DiscordChannelAdapter implements ChannelAdapter {
         try {
             String url = API_BASE + "/channels/" + channelId + "/messages";
             
-            // TODO: 实现文件上传（需要 multipart/form-data）
-            log.info("发送 Discord 文件：{} - {}", channelId, filePath);
+            // 读取文件内容
+            Path path = Paths.get(filePath);
+            if (!Files.exists(path)) {
+                log.error("文件不存在：{}", filePath);
+                return;
+            }
             
-            Map<String, String> body = new HashMap<>();
-            body.put("content", description != null ? description : "");
+            byte[] fileBytes = Files.readAllBytes(path);
+            String fileName = path.getFileName().toString();
+            
+            // 构建 multipart/form-data 请求
+            String boundary = "----WebKitFormBoundary" + UUID.randomUUID().toString().replace("-", "");
+            
+            byte[] body = buildMultipartBody(boundary, description != null ? description : "", fileBytes, fileName);
             
             HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)))
                 .header("Authorization", "Bot " + botToken)
-                .header("Content-Type", "application/json")
+                .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+                .POST(HttpRequest.BodyPublishers.ofByteArray(body))
                 .build();
             
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            log.info("Discord 文件发送响应：{}", response.statusCode());
+            
+            if (response.statusCode() == 200) {
+                log.info("Discord 文件发送成功：{} ({} bytes)", fileName, fileBytes.length);
+            } else {
+                log.error("Discord 文件发送失败：{} - {}", response.statusCode(), response.body());
+            }
         } catch (Exception e) {
             log.error("Discord 文件发送异常", e);
         }
+    }
+    
+    /**
+     * 构建 multipart/form-data 请求体
+     */
+    private byte[] buildMultipartBody(String boundary, String content, byte[] fileBytes, String fileName) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        String CRLF = "\r\n";
+        
+        // content 字段
+        baos.write(("--" + boundary + CRLF).getBytes());
+        baos.write(("Content-Disposition: form-data; name=\"content\"" + CRLF).getBytes());
+        baos.write((CRLF).getBytes());
+        baos.write(content.getBytes());
+        baos.write(CRLF.getBytes());
+        
+        // file 字段
+        baos.write(("--" + boundary + CRLF).getBytes());
+        baos.write(("Content-Disposition: form-data; name=\"file\"; filename=\"" + fileName + "\"" + CRLF).getBytes());
+        baos.write(("Content-Type: application/octet-stream" + CRLF).getBytes());
+        baos.write((CRLF).getBytes());
+        baos.write(fileBytes);
+        baos.write(CRLF.getBytes());
+        
+        // 结束边界
+        baos.write(("--" + boundary + "--" + CRLF).getBytes());
+        
+        return baos.toByteArray();
     }
     
     /**

@@ -5,11 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -193,20 +197,92 @@ public class SlackService {
     public Map<String, Object> uploadFile(String channel, String filePath, String title, String comment) throws IOException, InterruptedException {
         String url = API_BASE + "/files.upload";
         
-        Map<String, Object> request = new HashMap<>();
-        request.put("channels", channel);
-        if (title != null) request.put("title", title);
-        if (comment != null) request.put("initial_comment", comment);
-        request.put("file", filePath);
+        // 读取文件内容
+        Path path = Paths.get(filePath);
+        if (!Files.exists(path)) {
+            throw new IOException("文件不存在：" + filePath);
+        }
         
-        // TODO: 实现 multipart/form-data 文件上传
-        log.info("Slack 文件上传：{} -> {}", filePath, channel);
+        byte[] fileBytes = Files.readAllBytes(path);
+        String fileName = path.getFileName().toString();
+        
+        // 构建 multipart/form-data 请求
+        String boundary = "----WebKitFormBoundary" + UUID.randomUUID().toString().replace("-", "");
+        
+        byte[] body = buildMultipartBody(boundary, channel, title, comment, fileBytes, fileName);
+        
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(url))
+            .header("Authorization", "Bearer " + token)
+            .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+            .POST(HttpRequest.BodyPublishers.ofByteArray(body))
+            .build();
+        
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        
+        JsonNode jsonResponse = objectMapper.readTree(response.body());
         
         Map<String, Object> result = new HashMap<>();
-        result.put("ok", true);
-        result.put("file", filePath);
+        result.put("ok", jsonResponse.path("ok").asBoolean());
+        
+        if (jsonResponse.path("ok").asBoolean()) {
+            JsonNode file = jsonResponse.path("file");
+            result.put("file_id", file.path("id").asText());
+            result.put("file_name", file.path("name").asText());
+            result.put("file_url", file.path("permalink").asText());
+            log.info("Slack 文件上传成功：{} -> {}", fileName, channel);
+        } else {
+            log.error("Slack 文件上传失败：{}", jsonResponse.path("error").asText());
+        }
         
         return result;
+    }
+    
+    /**
+     * 构建 multipart/form-data 请求体
+     */
+    private byte[] buildMultipartBody(String boundary, String channel, String title, 
+                                       String comment, byte[] fileBytes, String fileName) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        String CRLF = "\r\n";
+        
+        // channels 字段
+        baos.write(("--" + boundary + CRLF).getBytes());
+        baos.write(("Content-Disposition: form-data; name=\"channels\"" + CRLF).getBytes());
+        baos.write((CRLF).getBytes());
+        baos.write(channel.getBytes());
+        baos.write(CRLF.getBytes());
+        
+        // title 字段 (可选)
+        if (title != null) {
+            baos.write(("--" + boundary + CRLF).getBytes());
+            baos.write(("Content-Disposition: form-data; name=\"title\"" + CRLF).getBytes());
+            baos.write((CRLF).getBytes());
+            baos.write(title.getBytes());
+            baos.write(CRLF.getBytes());
+        }
+        
+        // initial_comment 字段 (可选)
+        if (comment != null) {
+            baos.write(("--" + boundary + CRLF).getBytes());
+            baos.write(("Content-Disposition: form-data; name=\"initial_comment\"" + CRLF).getBytes());
+            baos.write((CRLF).getBytes());
+            baos.write(comment.getBytes());
+            baos.write(CRLF.getBytes());
+        }
+        
+        // file 字段
+        baos.write(("--" + boundary + CRLF).getBytes());
+        baos.write(("Content-Disposition: form-data; name=\"file\"; filename=\"" + fileName + "\"" + CRLF).getBytes());
+        baos.write(("Content-Type: application/octet-stream" + CRLF).getBytes());
+        baos.write((CRLF).getBytes());
+        baos.write(fileBytes);
+        baos.write(CRLF.getBytes());
+        
+        // 结束边界
+        baos.write(("--" + boundary + "--" + CRLF).getBytes());
+        
+        return baos.toByteArray();
     }
     
     // ==================== 频道管理 ====================
