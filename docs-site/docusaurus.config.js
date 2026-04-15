@@ -17,6 +17,7 @@ const config = {
   organizationName: 'houjibo',
   projectName: 'JClaw',
   deploymentBranch: 'gh-pages',
+  trailingSlash: false,
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
