@@ -1,0 +1,69 @@
+{
+  "groups": [
+    {
+      "name": "JClaw 告警规则",
+      "rules": [
+        {
+          "alert": "高错误率",
+          "expr": "rate(jclaw_errors_total[5m]) > 0.1",
+          "for": "5m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "summary": "JClaw 错误率过高",
+            "description": "过去 5 分钟错误率超过 0.1 次/秒"
+          }
+        },
+        {
+          "alert": "API 高延迟",
+          "expr": "histogram_quantile(0.95, rate(jclaw_api_latency_seconds_bucket[5m])) > 1",
+          "for": "5m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "summary": "JClaw API 延迟过高",
+            "description": "P95 延迟超过 1 秒"
+          }
+        },
+        {
+          "alert": "AI 响应慢",
+          "expr": "histogram_quantile(0.95, rate(jclaw_ai_response_seconds_bucket[5m])) > 5",
+          "for": "5m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "summary": "AI 响应时间过长",
+            "description": "P95 AI 响应时间超过 5 秒"
+          }
+        },
+        {
+          "alert": "JVM 内存不足",
+          "expr": "jvm_memory_used_bytes{area=\"heap\"} / jvm_memory_max_bytes{area=\"heap\"} > 0.9",
+          "for": "5m",
+          "labels": {
+            "severity": "critical"
+          },
+          "annotations": {
+            "summary": "JVM 堆内存使用率超过 90%",
+            "description": "当前堆内存使用率：{{ $value | humanizePercentage }}"
+          }
+        },
+        {
+          "alert": "服务不可用",
+          "expr": "up{job=\"jclaw\"} == 0",
+          "for": "1m",
+          "labels": {
+            "severity": "critical"
+          },
+          "annotations": {
+            "summary": "JClaw 服务不可用",
+            "description": "实例 {{ $labels.instance }} 已下线"
+          }
+        }
+      ]
+    }
+  ]
+}

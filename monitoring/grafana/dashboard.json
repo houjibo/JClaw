@@ -1,0 +1,98 @@
+{
+  "dashboard": {
+    "title": "JClaw 监控仪表板",
+    "tags": ["jclaw"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "API 请求延迟",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(jclaw_api_latency_seconds_bucket[5m]))",
+            "legendFormat": "P95"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(jclaw_api_latency_seconds_bucket[5m]))",
+            "legendFormat": "P50"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "工具调用次数",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "rate(jclaw_tool_invocations_total[5m])",
+            "legendFormat": "次/秒"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "AI 响应时间",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(jclaw_ai_response_seconds_bucket[5m]))",
+            "legendFormat": "P95"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(jclaw_ai_response_seconds_bucket[5m]))",
+            "legendFormat": "P50"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 4,
+        "title": "AI 请求次数",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "rate(jclaw_ai_requests_total[5m])",
+            "legendFormat": "次/秒"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      },
+      {
+        "id": 5,
+        "title": "JVM 内存使用",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "jvm_memory_used_bytes{area=\"heap\"}",
+            "legendFormat": "Heap"
+          },
+          {
+            "expr": "jvm_memory_used_bytes{area=\"nonheap\"}",
+            "legendFormat": "Non-Heap"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16}
+      },
+      {
+        "id": 6,
+        "title": "错误率",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(jclaw_errors_total[5m])",
+            "legendFormat": "错误/秒"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16}
+      }
+    ],
+    "refresh": "5s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    }
+  }
+}
