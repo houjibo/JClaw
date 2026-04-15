@@ -160,13 +160,7 @@ public class DiscordChannelAdapter implements ChannelAdapter {
                 log.info("收到 Discord 消息：{} - {}", author, content);
                 
                 if (messageListener != null) {
-                    messageListener.onMessage(channelId, content, Map.of(
-                        "from", author,
-                        "from_id", authorId,
-                        "channel_id", channelId,
-                        "message_id", String.valueOf(messageId),
-                        "guild_id", guildId
-                    ));
+                    messageListener.onMessage(channelId, content);
                 }
             }
         }

@@ -98,14 +98,14 @@ public class GitHubService {
     /**
      * 查询 Issues
      */
-    public List<Map<String, Object>> listIssues(String state, String labels, int page, int perPage) throws IOException, InterruptedException {
+    public List<Map<String, Object>> listIssues(String state, String labelFilter, int page, int perPage) throws IOException, InterruptedException {
         String url = API_BASE + "/repos/" + owner + "/" + repo + "/issues" +
             "?state=" + (state != null ? state : "open") +
             "&page=" + page +
             "&per_page=" + perPage;
         
-        if (labels != null) {
-            url += "&labels=" + labels;
+        if (labelFilter != null) {
+            url += "&labels=" + labelFilter;
         }
         
         JsonNode response = getJson(url);

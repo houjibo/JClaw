@@ -88,12 +88,12 @@ public class ApiDocGenerator {
         
         // 统计
         JsonNode paths = swagger.path("paths");
-        int totalEndpoints = 0;
+        final int[] totalEndpoints = {0};
         Set<String> tags = new HashSet<>();
         
         paths.fields().forEachRemaining(entry -> {
             entry.getValue().fields().forEachRemaining(method -> {
-                totalEndpoints++;
+                totalEndpoints[0]++;
                 method.getValue().path("tags").forEach(tag -> tags.add(tag.asText()));
             });
         });
@@ -101,7 +101,7 @@ public class ApiDocGenerator {
         sb.append("## API 统计\n\n");
         sb.append("| 指标 | 数量 |\n");
         sb.append("|------|------|\n");
-        sb.append("| 端点总数 | ").append(totalEndpoints).append(" |\n");
+        sb.append("| 端点总数 | ").append(totalEndpoints[0]).append(" |\n");
         sb.append("| 分组数量 | ").append(tags.size()).append(" |\n");
         sb.append("\n");
         

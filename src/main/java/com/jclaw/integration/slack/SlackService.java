@@ -65,9 +65,9 @@ public class SlackService {
     }
     
     /**
-     * 发送消息（支持线程回复）
+     * 发送消息（支持线程回复和 blocks）
      */
-    public Map<String, Object> sendMessage(String channel, String text, String threadTs, Map<String, Object> blocks) throws IOException, InterruptedException {
+    public Map<String, Object> sendMessage(String channel, String text, String threadTs, List<Map<String, Object>> blocks) throws IOException, InterruptedException {
         String url = API_BASE + "/chat.postMessage";
         
         Map<String, Object> request = new HashMap<>();

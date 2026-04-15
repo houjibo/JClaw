@@ -114,11 +114,7 @@ public class TelegramChannelAdapter implements ChannelAdapter {
                         log.info("收到 Telegram 消息：{} - {}", from, text);
                         
                         if (messageListener != null) {
-                            messageListener.onMessage(chatId, text, Map.of(
-                                "from", from,
-                                "chat_id", chatId,
-                                "message_id", message.path("message_id").asText()
-                            ));
+                            messageListener.onMessage(chatId, text);
                         }
                     }
                 }

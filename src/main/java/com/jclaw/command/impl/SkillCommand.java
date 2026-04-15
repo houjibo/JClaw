@@ -26,12 +26,12 @@ import java.util.*;
  * @since 2026-04-15
  */
 @Component
-@RequiredArgsConstructor
 public class SkillCommand extends Command {
     
     private final SkillMarketService skillMarketService;
     
-    public SkillCommand() {
+    public SkillCommand(SkillMarketService skillMarketService) {
+        this.skillMarketService = skillMarketService;
         this.name = "skill";
         this.description = "技能管理";
         this.aliases = Arrays.asList("sk", "skills");
